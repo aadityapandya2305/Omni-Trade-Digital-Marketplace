@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="OmniTradeMvc/OmniTradeMvc.csproj" Id="1a1630ff-c43c-4bc8-8a68-c1e9067d8004" />
   <Project Path="OmniTradeWebApi/OmniTradeWebApi.csproj" />
 </Solution>
