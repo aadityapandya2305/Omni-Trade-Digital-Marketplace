@@ -1,0 +1,6 @@
+@OmniTradeWebApi_HostAddress = http://localhost:5108
+
+GET {{OmniTradeWebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
