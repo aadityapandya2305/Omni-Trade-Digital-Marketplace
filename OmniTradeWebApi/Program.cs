@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using OmniTradeWebApi.Data;
+
 namespace OmniTradeWebApi
 {
     public class Program
@@ -9,6 +12,9 @@ namespace OmniTradeWebApi
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            builder.Services.AddDbContext<OmniTradeHubContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("OmniTradeDb")));
 
             var app = builder.Build();
 
