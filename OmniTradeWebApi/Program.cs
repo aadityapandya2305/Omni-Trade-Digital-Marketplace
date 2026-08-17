@@ -52,6 +52,36 @@ namespace OmniTradeWebApi
 
             var app = builder.Build();
 
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider
+                    .GetRequiredService<OmniTradeHubContext>();
+
+                var passwordHasher = scope.ServiceProvider
+                    .GetRequiredService<PasswordHasher<User>>();
+
+                var adminExists = context.Users
+                    .Any(u => u.Role == "Admin");
+
+                if (!adminExists)
+                {
+                    var admin = new User
+                    {
+                        Username = "admin",
+                        Email = "admin@omnitradehub.com",
+                        Role = "Admin"
+                    };
+
+                    admin.PasswordHash = passwordHasher.HashPassword(
+                        admin,
+                        "Admin@123");
+
+                    context.Users.Add(admin);
+
+                    context.SaveChanges();
+                }
+            }
+
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
