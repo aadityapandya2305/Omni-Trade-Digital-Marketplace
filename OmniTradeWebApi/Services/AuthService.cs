@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using OmniTradeWebApi.Data;
 using OmniTradeWebApi.DTOs;
 using OmniTradeWebApi.Models;
+using OmniTradeWebApi.Repositories;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -12,25 +11,24 @@ namespace OmniTradeWebApi.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly OmniTradeHubContext _context;
+        private readonly IUserRepository _userRepository;
         private readonly PasswordHasher<User> _passwordHasher;
-
         private readonly IConfiguration _configuration;
 
         public AuthService(
-        OmniTradeHubContext context,
-        PasswordHasher<User> passwordHasher,
-        IConfiguration configuration)
+            IUserRepository userRepository,
+            PasswordHasher<User> passwordHasher,
+            IConfiguration configuration)
         {
-            _context = context;
+            _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _configuration = configuration;
         }
 
         public async Task<RegisterResponseDto> RegisterAsync(RegisterDto request)
         {
-            var existingUsername = await _context.Users
-                .AnyAsync(u => u.Username == request.Username);
+            var existingUsername =
+                await _userRepository.UsernameExistsAsync(request.Username);
 
             if (existingUsername)
             {
@@ -38,8 +36,8 @@ namespace OmniTradeWebApi.Services
                     "Username is already registered.");
             }
 
-            var existingEmail = await _context.Users
-                .AnyAsync(u => u.Email == request.Email);
+            var existingEmail =
+                await _userRepository.EmailExistsAsync(request.Email);
 
             if (existingEmail)
             {
@@ -74,9 +72,7 @@ namespace OmniTradeWebApi.Services
                 user,
                 request.Password);
 
-            _context.Users.Add(user);
-
-            await _context.SaveChangesAsync();
+            await _userRepository.AddUserAsync(user);
 
             return new RegisterResponseDto
             {
@@ -87,18 +83,25 @@ namespace OmniTradeWebApi.Services
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user =
+                await _userRepository.GetUserByEmailAsync(request.Email);
 
             if (user == null)
             {
-                throw new InvalidOperationException("Invalid email or password.");
+                throw new InvalidOperationException(
+                    "Invalid email or password.");
             }
 
-            var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+            var passwordResult =
+                _passwordHasher.VerifyHashedPassword(
+                    user,
+                    user.PasswordHash,
+                    request.Password);
 
             if (passwordResult == PasswordVerificationResult.Failed)
             {
-                throw new InvalidOperationException("Invalid email or password.");
+                throw new InvalidOperationException(
+                    "Invalid email or password.");
             }
 
             var token = GenerateJwtToken(user);
@@ -125,10 +128,21 @@ namespace OmniTradeWebApi.Services
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(
+                    ClaimTypes.NameIdentifier,
+                    user.Id.ToString()),
+
+                new Claim(
+                    ClaimTypes.Name,
+                    user.Username),
+
+                new Claim(
+                    ClaimTypes.Email,
+                    user.Email),
+
+                new Claim(
+                    ClaimTypes.Role,
+                    user.Role)
             };
 
             var securityKey = new SymmetricSecurityKey(
@@ -136,8 +150,7 @@ namespace OmniTradeWebApi.Services
 
             var credentials = new SigningCredentials(
                 securityKey,
-                SecurityAlgorithms.HmacSha256
-            );
+                SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
@@ -146,10 +159,10 @@ namespace OmniTradeWebApi.Services
                 expires: DateTime.UtcNow.AddMinutes(
                     double.Parse(
                         _configuration["Jwt:ExpirationMinutes"]!)),
-                signingCredentials: credentials
-            );
+                signingCredentials: credentials);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return new JwtSecurityTokenHandler()
+                .WriteToken(token);
         }
     }
 }
