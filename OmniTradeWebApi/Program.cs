@@ -1,10 +1,12 @@
+using Microsoft.OpenApi;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OmniTradeWebApi.Data;
 using OmniTradeWebApi.Models;
+using OmniTradeWebApi.Repositories;
 using OmniTradeWebApi.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 namespace OmniTradeWebApi
@@ -19,38 +21,67 @@ namespace OmniTradeWebApi
 
             builder.Services.AddControllers();
 
-            builder.Services.AddOpenApi();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition("Bearer",
+                    new OpenApiSecurityScheme
+                    {
+                        Name = "Authorization",
+                        Type = SecuritySchemeType.Http,
+                        Scheme = "bearer",
+                        BearerFormat = "JWT",
+                        In = ParameterLocation.Header,
+                        Description = "Enter your JWT token."
+                    });
+
+                options.AddSecurityRequirement(document =>
+                    new OpenApiSecurityRequirement
+                    {
+                        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+                    });
+            });
 
             builder.Services.AddDbContext<OmniTradeHubContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("OmniTradeDb")));
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("OmniTradeDb")));
 
             builder.Services.AddScoped<PasswordHasher<User>>();
             builder.Services.AddScoped<IAuthService, AuthService>();
 
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            builder.Services.AddScoped<IVendorRepository, VendorRepository>();
+
+            builder.Services.AddAuthentication(
+                JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
                     var key = builder.Configuration["Jwt:Key"];
 
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(key!)),
+                    options.TokenValidationParameters =
+                        new TokenValidationParameters
+                        {
+                            ValidateIssuerSigningKey = true,
 
-                        ValidateIssuer = true,
-                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                            IssuerSigningKey =
+                                new SymmetricSecurityKey(
+                                    Encoding.UTF8.GetBytes(key!)),
 
-                        ValidateAudience = true,
-                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                            ValidateIssuer = true,
+                            ValidIssuer =
+                                builder.Configuration["Jwt:Issuer"],
 
-                        ValidateLifetime = true,
+                            ValidateAudience = true,
+                            ValidAudience =
+                                builder.Configuration["Jwt:Audience"],
 
-                        ClockSkew = TimeSpan.Zero
-                    };
+                            ValidateLifetime = true,
+
+                            ClockSkew = TimeSpan.Zero
+                        };
                 });
 
             var app = builder.Build();
+
+            // Seed Admin account if one does not already exist.
 
             using (var scope = app.Services.CreateScope())
             {
@@ -82,14 +113,12 @@ namespace OmniTradeWebApi
                 }
             }
 
+            // Configure the HTTP request pipeline.
+
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
-
-                app.UseSwaggerUI(options =>
-                {
-                    options.SwaggerEndpoint("/openapi/v1.json", "OmniTrade Web API v1");
-                });
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
             app.UseHttpsRedirection();
