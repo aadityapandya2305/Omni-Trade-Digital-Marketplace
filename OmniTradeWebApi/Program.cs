@@ -49,6 +49,7 @@ namespace OmniTradeWebApi
 
             builder.Services.AddScoped<IVendorRepository, VendorRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
 
             builder.Services.AddAuthentication(
                 JwtBearerDefaults.AuthenticationScheme)
