@@ -42,13 +42,13 @@ namespace OmniTradeWebApi
             });
 
             builder.Services.AddDbContext<OmniTradeHubContext>(options =>
-                options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("OmniTradeDb")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("OmniTradeDb")));
 
             builder.Services.AddScoped<PasswordHasher<User>>();
             builder.Services.AddScoped<IAuthService, AuthService>();
 
             builder.Services.AddScoped<IVendorRepository, VendorRepository>();
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
             builder.Services.AddAuthentication(
                 JwtBearerDefaults.AuthenticationScheme)
