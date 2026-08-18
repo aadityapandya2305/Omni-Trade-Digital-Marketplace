@@ -45,6 +45,8 @@ namespace OmniTradeWebApi
                 options.UseSqlServer(
                     builder.Configuration.GetConnectionString("OmniTradeDb")));
 
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
             builder.Services.AddScoped<PasswordHasher<User>>();
             builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -78,6 +80,8 @@ namespace OmniTradeWebApi
                             ClockSkew = TimeSpan.Zero
                         };
                 });
+
+
 
             var app = builder.Build();
 
