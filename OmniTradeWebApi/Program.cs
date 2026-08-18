@@ -1,10 +1,11 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OmniTradeWebApi.Data;
 using OmniTradeWebApi.Models;
+using OmniTradeWebApi.Repositories;
 using OmniTradeWebApi.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 namespace OmniTradeWebApi
@@ -23,6 +24,8 @@ namespace OmniTradeWebApi
 
             builder.Services.AddDbContext<OmniTradeHubContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("OmniTradeDb")));
+
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
             builder.Services.AddScoped<PasswordHasher<User>>();
             builder.Services.AddScoped<IAuthService, AuthService>();
@@ -49,6 +52,8 @@ namespace OmniTradeWebApi
                         ClockSkew = TimeSpan.Zero
                     };
                 });
+
+
 
             var app = builder.Build();
 
