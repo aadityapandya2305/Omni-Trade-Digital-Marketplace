@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 
 namespace OmniTradeWebApi.Models;
@@ -21,5 +22,6 @@ public partial class Vendor
 
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 
+    [ValidateNever]
     public virtual User User { get; set; } = null!;
 }
