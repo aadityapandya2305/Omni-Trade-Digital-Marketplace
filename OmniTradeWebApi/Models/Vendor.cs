@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace OmniTradeWebApi.Models;
 
@@ -18,8 +19,10 @@ public partial class Vendor
 
     public bool? IsApproved { get; set; }
 
+    [JsonIgnore]
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
+    [JsonIgnore]
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 
     [ValidateNever]
