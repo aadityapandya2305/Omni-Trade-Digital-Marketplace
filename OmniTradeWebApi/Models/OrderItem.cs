@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
 
 namespace OmniTradeWebApi.Models;
 
@@ -17,6 +19,7 @@ public partial class OrderItem
 
     public decimal UnitPrice { get; set; }
 
+    [JsonIgnore]
     public virtual Order Order { get; set; } = null!;
 
     public virtual Product Product { get; set; } = null!;

@@ -3,7 +3,6 @@ using OmniTradeWebApi.Models;
 using OmniTradeWebApi.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using OmniTradeWebApi.Repositories;
 
 namespace OmniTradeWebApi.Controllers
 {
