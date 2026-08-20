@@ -2,10 +2,9 @@ using Moq;
 using OmniTradeWebApi.Controllers;
 using OmniTradeWebApi.Models;
 using OmniTradeWebApi.Repositories;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Xunit;
 
 namespace OmniTradeTests
 {
@@ -17,7 +16,7 @@ namespace OmniTradeTests
             var mockRepo = new Mock<IVendorRepository>();
             mockRepo.Setup(x => x.GetVendorByIdAsync(1)).ReturnsAsync(new Vendor { Id = 1, UserId = 1, StoreName = "Test Store" });
 
-            var controller = new VendorsController(mockRepo.Object, null!);
+            var controller = new VendorsController(mockRepo.Object);
             var result = await controller.GetVendor(1);
 
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -32,7 +31,7 @@ namespace OmniTradeTests
             var mockRepo = new Mock<IVendorRepository>();
             mockRepo.Setup(x => x.GetVendorByIdAsync(99)).ReturnsAsync(null as Vendor?);
 
-            var controller = new VendorsController(mockRepo.Object, null!);
+            var controller = new VendorsController(mockRepo.Object);
             var result = await controller.GetVendor(99);
 
             Assert.IsType<NotFoundResult>(result.Result);
@@ -46,7 +45,7 @@ namespace OmniTradeTests
 
             var vendor = new Vendor { StoreName = "Test Store", Description = "A test store", ContactEmail = "test@test.com" };
 
-            var controller = new VendorsController(mockRepo.Object, null!);
+            var controller = new VendorsController(mockRepo.Object);
             var result = await controller.RegisterVendor(vendor);
 
             var createdResult = Assert.IsType<CreatedResult>(result.Result);
@@ -62,7 +61,7 @@ namespace OmniTradeTests
 
             var vendor = new Vendor { StoreName = "Test Store" };
 
-            var controller = new VendorsController(mockRepo.Object, null!);
+            var controller = new VendorsController(mockRepo.Object);
             var result = await controller.RegisterVendor(vendor);
 
             Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -74,7 +73,7 @@ namespace OmniTradeTests
             var mockRepo = new Mock<IVendorRepository>();
             mockRepo.Setup(x => x.GetVendorByIdAsync(1)).ReturnsAsync(new Vendor { Id = 1, IsApproved = false });
 
-            var controller = new VendorsController(mockRepo.Object, null!);
+            var controller = new VendorsController(mockRepo.Object);
             var result = await controller.ApproveVendor(1, true);
 
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -127,7 +126,7 @@ namespace OmniTradeTests
 
             var vendor = new Vendor { StoreName = "New Name", Description = "New Desc", ContactEmail = "new@test.com" };
 
-            var userId = "1";
+            var controller = new VendorsController(mockRepo.Object, null!)
             var authDefault = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, userId) }));
             var controller = new VendorsController(mockRepo.Object, null!)
             {
