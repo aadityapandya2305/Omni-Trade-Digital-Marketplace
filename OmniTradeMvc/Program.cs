@@ -9,6 +9,11 @@ namespace OmniTradeMvc
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddHttpClient("OmniTradeApi", client =>
+            {
+                client.BaseAddress = new Uri("http://localhost:5108/");
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

@@ -1,0 +1,45 @@
+@model OmniTradeMvc.Models.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<h1>Register</h1>
+
+<form asp-action="Register" method="post">
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <div>
+        <label asp-for="Username"></label>
+        <input asp-for="Username" />
+        <span asp-validation-for="Username"></span>
+    </div>
+
+    <div>
+        <label asp-for="Email"></label>
+        <input asp-for="Email" />
+        <span asp-validation-for="Email"></span>
+    </div>
+
+    <div>
+        <label asp-for="Password"></label>
+        <input asp-for="Password" />
+        <span asp-validation-for="Password"></span>
+    </div>
+
+    <div>
+        <label asp-for="AccountType"></label>
+        <select asp-for="AccountType">
+            <option value="Customer">Customer</option>
+            <option value="Vendor">Vendor</option>
+        </select>
+        <span asp-validation-for="AccountType"></span>
+    </div>
+
+    <button type="submit">Register</button>
+</form>
+
+<p>
+    Already have an account?
+    <a asp-action="Login">Login</a>
+</p>
