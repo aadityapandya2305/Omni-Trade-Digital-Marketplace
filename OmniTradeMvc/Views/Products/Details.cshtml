@@ -1,0 +1,41 @@
+﻿@model OmniTradeMvc.Models.ProductViewModel
+
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<div class="container mt-4">
+    <h1>Product Details</h1>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h2 class="card-title">@Model.Name</h2>
+
+            <p class="card-text">
+                @Model.Description
+            </p>
+
+            <p>
+                <strong>Category:</strong> @Model.Category
+            </p>
+
+            <p>
+                <strong>Price:</strong> ₹@Model.Price
+            </p>
+
+            <p>
+                <strong>Stock Available:</strong> @Model.StockQuantity
+            </p>
+
+            <p>
+                <strong>Vendor ID:</strong> @Model.VendorId
+            </p>
+
+            <a asp-controller="Products"
+               asp-action="Index"
+               class="btn btn-secondary">
+                Back to Products
+            </a>
+        </div>
+    </div>
+</div>
