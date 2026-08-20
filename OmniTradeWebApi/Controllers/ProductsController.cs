@@ -57,6 +57,20 @@ namespace OmniTradeWebApi.Controllers
             return Ok(products);
         }
 
+        [HttpGet("filter")]
+        public async Task<ActionResult<IEnumerable<Product>>> GetProductsByFilter(
+            [FromQuery] string? name = null,
+            [FromQuery] string? category = null,
+            [FromQuery] decimal? minPrice = null,
+            [FromQuery] decimal? maxPrice = null,
+            [FromQuery] int? vendorId = null)
+        {
+            var products = await _productRepository
+                .GetProductsByFilterAsync(name, category, minPrice, maxPrice, vendorId);
+
+            return Ok(products);
+        }
+
         [HttpPost]
         [Authorize(Roles = "Vendor")]
         public async Task<ActionResult> AddProduct(Product product)

@@ -44,5 +44,11 @@ namespace OmniTradeWebApi.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task UpdateVendorProfileAsync(Vendor vendor)
+        {
+            _context.Vendors.Update(vendor);
+            await _context.SaveChangesAsync();
+        }
     }
 }
