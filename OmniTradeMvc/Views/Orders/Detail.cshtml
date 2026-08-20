@@ -1,0 +1,75 @@
+@model OmniTradeMvc.Models.OrderViewModel
+
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<h1>Order Details</h1>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <h4>Order Info</h4>
+        <table class="table">
+            <tr>
+                <th>Order ID</th>
+                <td>#@Model.Id</td>
+            </tr>
+            <tr>
+                <th>Order Date</th>
+                <td>@Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td><span class="badge bg-info">@Model.Status</span></td>
+            </tr>
+            <tr>
+                <th>Shipping Address</th>
+                <td>@Model.ShippingAddress</td>
+            </tr>
+            <tr>
+                <th>Payment Method</th>
+                <td>@Model.PaymentMethod</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <h4>Items</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td>@item.Price.ToString("C")</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.Total.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3">Grand Total</th>
+                    <th>@Model.TotalAmount.ToString("C")</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-controller="Orders" asp-action="Index" class="btn btn-outline-secondary">Back to My Orders</a>
+</div>
