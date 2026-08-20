@@ -10,6 +10,8 @@ namespace OmniTradeWebApi.Repositories
 
         Task<IEnumerable<Product>> GetProductsByNameAsync(string name);
 
+        Task<IEnumerable<Product>> GetProductsByFilterAsync(string? name = null, string? category = null, decimal? minPrice = null, decimal? maxPrice = null, int? vendorId = null);
+
         Task AddProductAsync(Product product);
 
         Task UpdateProductAsync(Product product);

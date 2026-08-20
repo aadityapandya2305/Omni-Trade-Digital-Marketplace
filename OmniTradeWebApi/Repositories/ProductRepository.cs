@@ -35,6 +35,43 @@ namespace OmniTradeWebApi.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Product>> GetProductsByFilterAsync(
+            string? name = null,
+            string? category = null,
+            decimal? minPrice = null,
+            decimal? maxPrice = null,
+            int? vendorId = null)
+        {
+            var query = _context.Products.Include(p => p.Vendor).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                query = query.Where(p => p.Name.Contains(name));
+            }
+
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                query = query.Where(p => p.Category == category);
+            }
+
+            if (minPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= minPrice.Value);
+            }
+
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= maxPrice.Value);
+            }
+
+            if (vendorId.HasValue)
+            {
+                query = query.Where(p => p.VendorId == vendorId.Value);
+            }
+
+            return await query.ToListAsync();
+        }
+
         public async Task AddProductAsync(Product product)
         {
             await _context.Products.AddAsync(product);
