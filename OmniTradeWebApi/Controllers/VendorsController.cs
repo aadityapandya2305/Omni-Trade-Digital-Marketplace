@@ -11,10 +11,12 @@ namespace OmniTradeWebApi.Controllers
     public class VendorsController : ControllerBase
     {
         private readonly IVendorRepository _vendorRepository;
+        private readonly IProductRepository _productRepository;
 
-        public VendorsController(IVendorRepository vendorRepository)
+        public VendorsController(IVendorRepository vendorRepository, IProductRepository productRepository)
         {
             _vendorRepository = vendorRepository;
+            _productRepository = productRepository;
         }
 
         [HttpGet("{id}")]
