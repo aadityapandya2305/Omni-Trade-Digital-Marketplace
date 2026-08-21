@@ -115,9 +115,9 @@ namespace OmniTradeWebApi.Controllers
                 vendorId = vendor.Id,
                 storeName = vendor.StoreName,
                 totalProducts = products.Count(p => p.VendorId == vendor.Id),
-                approvedProducts = products.Count(p => p.VendorId == vendor.Id && p.IsActive),
-                pendingProducts = products.Count(p => p.VendorId == vendor.Id && !p.IsActive),
-                totalStock = products.Where(p => p.VendorId == vendor.Id).Sum(p => p.StockQuantity),
+                totalStock = products
+                    .Where(p => p.VendorId == vendor.Id)
+                    .Sum(p => p.StockQuantity),
                 isApproved = vendor.IsApproved.Value
             };
 
