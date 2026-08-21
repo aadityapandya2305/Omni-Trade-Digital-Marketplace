@@ -209,7 +209,6 @@ namespace OmniTradeTests
                         Id = 1,
                         VendorId = 1,
                         Name = "Product 1",
-                        IsActive = true,
                         Price = 10,
                         StockQuantity = 5
                     },
@@ -218,7 +217,6 @@ namespace OmniTradeTests
                         Id = 2,
                         VendorId = 1,
                         Name = "Product 2",
-                        IsActive = false,
                         Price = 20,
                         StockQuantity = 10
                     }

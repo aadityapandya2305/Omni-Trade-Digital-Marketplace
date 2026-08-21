@@ -21,8 +21,6 @@ public partial class Product
 
     public string Category { get; set; } = null!;
 
-    public bool IsActive { get; set; }
-
     [JsonIgnore]
     public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
 
