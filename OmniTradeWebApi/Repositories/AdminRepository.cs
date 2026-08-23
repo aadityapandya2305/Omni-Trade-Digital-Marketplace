@@ -45,5 +45,19 @@ namespace OmniTradeWebApi.Repositories
                 })
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<VendorManagementDto>> GetAllVendorsAsync()
+        {
+            return await _context.Vendors
+                .Select(v => new VendorManagementDto
+                {
+                    Id = v.Id,
+                    UserId = v.UserId,
+                    StoreName = v.StoreName,
+                    ContactEmail = v.ContactEmail,
+                    IsApproved = v.IsApproved
+                })
+                .ToListAsync();
+        }
     }
 }

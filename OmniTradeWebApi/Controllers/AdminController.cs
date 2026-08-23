@@ -32,5 +32,13 @@ namespace OmniTradeWebApi.Controllers
 
             return Ok(users);
         }
+
+        [HttpGet("vendors")]
+        public async Task<ActionResult> GetAllVendors()
+        {
+            var vendors = await _adminRepository.GetAllVendorsAsync();
+
+            return Ok(vendors);
+        }
     }
 }

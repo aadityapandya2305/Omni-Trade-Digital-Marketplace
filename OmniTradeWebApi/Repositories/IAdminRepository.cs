@@ -7,5 +7,7 @@ namespace OmniTradeWebApi.Repositories
         Task<PlatformAnalyticsDto> GetPlatformAnalyticsAsync();
 
         Task<IEnumerable<UserManagementDto>> GetAllUsersAsync();
+
+        Task<IEnumerable<VendorManagementDto>> GetAllVendorsAsync();
     }
 }
