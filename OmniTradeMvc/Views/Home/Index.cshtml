@@ -2,7 +2,58 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Hero Section (Centered) -->
+<div class="p-5 mb-4 bg-light rounded-3 shadow-sm border text-center">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold text-dark">Welcome to OmniTrade</h1>
+        <p class="col-md-8 mx-auto fs-4 text-secondary">
+            Your premier multi-vendor e-commerce platform. Discover amazing products from independent vendors or grow your business by opening your own store today.
+        </p>
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <a class="btn btn-primary btn-lg px-4" asp-controller="Products" asp-action="Index">Browse Products</a>
+            <a class="btn btn-outline-secondary btn-lg px-4" asp-controller="Auth" asp-action="Register">Join as Vendor</a>
+        </div>
+    </div>
+</div>
+
+<!-- Features / Highlights Section -->
+<div class="row text-center g-4 py-3">
+    <!-- Customer Feature Card -->
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body p-4">
+                <h3 class="h4 mb-3 text-primary">For Customers</h3>
+                <p class="text-muted">
+                    Explore a wide variety of products, add items to your cart seamlessly, and track your order status in real time.
+                </p>
+                <a class="btn btn-outline-primary btn-sm mt-2" asp-controller="Products" asp-action="Index">Shop Now</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vendor Feature Card -->
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body p-4">
+                <h3 class="h4 mb-3 text-success">For Vendors</h3>
+                <p class="text-muted">
+                    Manage your inventory, update store profiles, track fulfillment, and monitor your business analytics effortlessly.
+                </p>
+                <a class="btn btn-outline-success btn-sm mt-2" asp-controller="Auth" asp-action="Register">Vendor Portal</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secure & Reliable Card -->
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body p-4">
+                <h3 class="h4 mb-3 text-dark">Secure & Reliable</h3>
+                <p class="text-muted">
+                    Built with role-based security, protected user authentication, and high-performance backend architecture.
+                </p>
+                <a class="btn btn-outline-dark btn-sm mt-2" asp-controller="Auth" asp-action="Login">Sign In</a>
+            </div>
+        </div>
+    </div>
 </div>

@@ -35,7 +35,16 @@ namespace OmniTradeMvc.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
+                    var result = await response.Content
+                        .ReadFromJsonAsync<AuthResponseViewModel>();
+
+                    HttpContext.Session.SetString("Username", result!.Username);
+                    HttpContext.Session.SetString("Token", result.Token);
+                    HttpContext.Session.SetInt32("UserId", result.UserId);
+                    HttpContext.Session.SetString("Role", result.Role);
+
                     TempData["SuccessMessage"] = "Login successful.";
+
                     return RedirectToAction("Index", "Home");
                 }
 
@@ -90,6 +99,14 @@ namespace OmniTradeMvc.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+
+            return RedirectToAction("Index", "Home");
         }
     }
 }

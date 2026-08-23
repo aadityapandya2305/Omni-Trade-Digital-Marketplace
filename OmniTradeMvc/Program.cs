@@ -11,7 +11,16 @@ namespace OmniTradeMvc
 
             builder.Services.AddHttpClient("OmniTradeApi", client =>
             {
-                client.BaseAddress = new Uri("http://localhost:5108/");
+                client.BaseAddress = new Uri("https://localhost:44315/");
+            });
+
+            builder.Services.AddDistributedMemoryCache();
+
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
             });
 
             var app = builder.Build();
@@ -26,6 +35,8 @@ namespace OmniTradeMvc
 
             app.UseHttpsRedirection();
             app.UseRouting();
+
+            app.UseSession();
 
             app.UseAuthorization();
 
