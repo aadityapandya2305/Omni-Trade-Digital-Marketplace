@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OmniTradeWebApi.Data;
+using OmniTradeWebApi.DTOs;
 using OmniTradeWebApi.Models;
 
 namespace OmniTradeWebApi.Repositories
@@ -161,6 +162,40 @@ namespace OmniTradeWebApi.Repositories
         {
             return await _context.OrderItems
                 .AnyAsync(oi => oi.OrderId == orderId && oi.VendorId == vendorId);
+        }
+
+        public async Task<VendorOrderDetailsDto?> GetVendorOrderDetailsAsync(int orderId, int vendorId)
+        {
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .FirstOrDefaultAsync(o =>
+                    o.Id == orderId &&
+                    o.OrderItems.Any(oi => oi.VendorId == vendorId));
+
+            if (order == null)
+            {
+                return null;
+            }
+
+            return new VendorOrderDetailsDto
+            {
+                OrderId = order.Id,
+                OrderDate = order.OrderDate,
+                Status = order.Status,
+                TotalAmount = order.TotalAmount,
+
+                Items = order.OrderItems
+                    .Where(oi => oi.VendorId == vendorId)
+                    .Select(oi => new VendorOrderItemDto
+                    {
+                        ProductId = oi.ProductId,
+                        ProductName = oi.Product.Name,
+                        Quantity = oi.Quantity,
+                        UnitPrice = oi.UnitPrice
+                    })
+                    .ToList()
+            };
         }
     }
 }
