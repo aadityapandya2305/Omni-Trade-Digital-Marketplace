@@ -2,46 +2,141 @@
 
 @{
     ViewData["Title"] = "Products";
+    var products = Model?.ToList() ?? new List<OmniTradeMvc.Models.ProductViewModel>();
 }
 
 <div class="container mt-4">
-    <h1>Products</h1>
 
-    <p class="text-muted">
-        Browse products available on OmniTrade.
-    </p>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="fw-bold mb-1">Products</h1>
+            <p class="text-muted mb-0">
+                Browse products available on OmniTrade.
+            </p>
+        </div>
+    </div>
 
-    <div class="row">
-        @foreach (var product in Model)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">@product.Name</h5>
+    <!-- Search -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form asp-controller="Products"
+                  asp-action="Search"
+                  method="get"
+                  class="row g-2">
 
-                        <p class="card-text">@product.Description</p>
+                <div class="col-md-10">
+                    <input type="text"
+                           name="name"
+                           class="form-control form-control-lg"
+                           placeholder="Search products by name..."
+                           value="@ViewBag.SearchTerm" />
+                </div>
 
-                        <p>
-                            <strong>Category:</strong> @product.Category
-                        </p>
+                <div class="col-md-2">
+                    <button type="submit"
+                            class="btn btn-primary btn-lg w-100">
+                        Search
+                    </button>
+                </div>
+            </form>
 
-                        <p>
-                            <strong>Price:</strong> ₹@product.Price
-                        </p>
+            @if (!string.IsNullOrWhiteSpace(ViewBag.SearchError))
+            {
+                <div class="alert alert-danger mt-3 mb-0">
+                    @ViewBag.SearchError
+                </div>
+            }
 
-                        <p>
-                            <strong>Stock:</strong> @product.StockQuantity
-                        </p>
+            @if (!string.IsNullOrWhiteSpace(ViewBag.SearchTerm))
+            {
+                <div class="mt-3">
+                    <span class="text-muted">
+                        Search results for:
+                    </span>
+                    <strong>"@ViewBag.SearchTerm"</strong>
 
-                        <a asp-controller="Products"
-                           asp-action="Details"
-                           asp-route-id="@product.Id"
-                           class="btn btn-primary">
-                            View Details
-                        </a>
+                    <a asp-controller="Products"
+                       asp-action="Index"
+                       class="btn btn-sm btn-outline-secondary ms-2">
+                        Clear Search
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Product count -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">
+            @products.Count product@(products.Count == 1 ? "" : "s") found
+        </h5>
+    </div>
+
+    @if (!products.Any())
+    {
+        <div class="alert alert-info text-center py-4">
+            <h5>No products found</h5>
+            <p class="mb-0">
+                Try searching for a different product.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var product in products)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+
+                        <div class="card-body d-flex flex-column">
+
+                            <div class="mb-2">
+                                <span class="badge bg-secondary">
+                                    @product.Category
+                                </span>
+                            </div>
+
+                            <h5 class="card-title fw-bold">
+                                @product.Name
+                            </h5>
+
+                            <p class="card-text text-muted flex-grow-1">
+                                @product.Description
+                            </p>
+
+                            <div class="mb-2">
+                                <span class="fs-4 fw-bold text-primary">
+                                    ₹@product.Price.ToString("N2")
+                                </span>
+                            </div>
+
+                            @if (product.StockQuantity > 0)
+                            {
+                                <p class="text-success mb-3">
+                                    <strong>In Stock:</strong>
+                                    @product.StockQuantity
+                                </p>
+                            }
+                            else
+                            {
+                                <p class="text-danger mb-3">
+                                    <strong>Out of Stock</strong>
+                                </p>
+                            }
+
+                            <a asp-controller="Products"
+                               asp-action="Details"
+                               asp-route-id="@product.Id"
+                               class="btn btn-primary w-100">
+                                View Details
+                            </a>
+
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 </div>
