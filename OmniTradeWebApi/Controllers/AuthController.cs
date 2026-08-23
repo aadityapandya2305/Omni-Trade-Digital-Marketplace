@@ -16,11 +16,17 @@ namespace OmniTradeWebApi.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDto request)
+        public async Task<IActionResult> Register([FromBody] RegisterDto request)
         {
-            var result = await _authService.RegisterAsync(request);
-
-            return Created("", result);
+            try
+            {
+                var result = await _authService.RegisterAsync(request);
+                return Created("", result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("login")]
