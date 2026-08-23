@@ -1,53 +1,85 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OmniTradeMvc.Models;
+using System.Net.Http.Json;
 
 namespace OmniTradeMvc.Controllers
 {
     public class ProductsController : Controller
     {
-        public IActionResult Index()
-        {
-            var products = new List<ProductViewModel>
-            {
-                new ProductViewModel
-                {
-                    Id = 1,
-                    VendorId = 1,
-                    Name = "Wireless Headphones",
-                    Description = "Bluetooth wireless headphones",
-                    Price = 2499.00m,
-                    StockQuantity = 15,
-                    Category = "Electronics"
-                },
-                new ProductViewModel
-                {
-                    Id = 2,
-                    VendorId = 2,
-                    Name = "Laptop Backpack",
-                    Description = "Water-resistant laptop backpack",
-                    Price = 1299.00m,
-                    StockQuantity = 20,
-                    Category = "Accessories"
-                }
-            };
+        private readonly IHttpClientFactory _httpClientFactory;
 
-            return View(products);
+        public ProductsController(IHttpClientFactory httpClientFactory)
+        {
+            _httpClientFactory = httpClientFactory;
         }
 
-        public IActionResult Details(int id)
+        [HttpGet]
+        public async Task<IActionResult> Index()
         {
-            var product = new ProductViewModel
+            try
             {
-                Id = id,
-                VendorId = 1,
-                Name = "Wireless Headphones",
-                Description = "Bluetooth wireless headphones",
-                Price = 2499.00m,
-                StockQuantity = 15,
-                Category = "Electronics"
-            };
+                var client = _httpClientFactory.CreateClient("OmniTradeApi");
 
-            return View(product);
+                var products = await client.GetFromJsonAsync<List<ProductViewModel>>(
+                    "api/Products");
+
+                return View(products ?? new List<ProductViewModel>());
+            }
+            catch (HttpRequestException)
+            {
+                return View(new List<ProductViewModel>());
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Search(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient("OmniTradeApi");
+
+                var products = await client.GetFromJsonAsync<List<ProductViewModel>>(
+                    $"api/Products/search?name={Uri.EscapeDataString(name)}");
+
+                ViewBag.SearchTerm = name;
+
+                return View("Index", products ?? new List<ProductViewModel>());
+            }
+            catch (HttpRequestException)
+            {
+                ViewBag.SearchTerm = name;
+                ViewBag.SearchError = "Unable to search products.";
+
+                return View("Index", new List<ProductViewModel>());
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("OmniTradeApi");
+
+                var product = await client.GetFromJsonAsync<ProductViewModel>(
+                    $"api/Products/{id}");
+
+                if (product == null)
+                {
+                    return NotFound();
+                }
+
+                return View(product);
+            }
+            catch (HttpRequestException)
+            {
+                return NotFound();
+            }
         }
     }
 }
