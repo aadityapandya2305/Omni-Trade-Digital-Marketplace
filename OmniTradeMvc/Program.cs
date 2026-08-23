@@ -21,6 +21,7 @@ namespace OmniTradeMvc
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
+                client.BaseAddress = new Uri("https://localhost:7286/");
             });
 
             var app = builder.Build();
@@ -29,7 +30,6 @@ namespace OmniTradeMvc
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
