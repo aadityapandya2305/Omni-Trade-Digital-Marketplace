@@ -12,5 +12,7 @@ namespace OmniTradeWebApi.Repositories
 
         Task UpdateVendorApprovalAsync(int vendorId, bool isApproved);
 
+        Task UpdateVendorProfileAsync(Vendor vendor);
+
     }
 }

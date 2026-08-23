@@ -12,7 +12,7 @@ using OmniTradeWebApi.Data;
 namespace OmniTradeWebApi.Migrations
 {
     [DbContext(typeof(OmniTradeHubContext))]
-    [Migration("20260823132205_InitialCreate")]
+    [Migration("20260823112928_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

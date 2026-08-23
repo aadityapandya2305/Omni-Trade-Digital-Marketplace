@@ -11,10 +11,12 @@ namespace OmniTradeWebApi.Controllers
     public class VendorsController : ControllerBase
     {
         private readonly IVendorRepository _vendorRepository;
+        private readonly IProductRepository _productRepository;
 
-        public VendorsController(IVendorRepository vendorRepository)
+        public VendorsController(IVendorRepository vendorRepository, IProductRepository productRepository)
         {
             _vendorRepository = vendorRepository;
+            _productRepository = productRepository;
         }
 
         [HttpGet("{id}")]
@@ -85,6 +87,71 @@ namespace OmniTradeWebApi.Controllers
                 message = isApproved
                     ? "Vendor approved successfully."
                     : "Vendor suspended successfully."
+            });
+        }
+
+        [HttpGet("dashboard")]
+        [Authorize(Roles = "Vendor")]
+        public async Task<ActionResult> GetVendorDashboard()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            var vendor = await _vendorRepository.GetVendorByUserIdAsync(userId);
+
+            if (vendor == null)
+            {
+                return NotFound("Vendor profile not found.");
+            }
+
+            var products = await _productRepository.GetAllProductsAsync();
+
+            var dashboard = new
+            {
+                vendorId = vendor.Id,
+                storeName = vendor.StoreName,
+                totalProducts = products.Count(p => p.VendorId == vendor.Id),
+                totalStock = products
+                    .Where(p => p.VendorId == vendor.Id)
+                    .Sum(p => p.StockQuantity),
+                isApproved = vendor.IsApproved.Value
+            };
+
+            return Ok(dashboard);
+        }
+
+        [HttpPut("profile")]
+        [Authorize(Roles = "Vendor")]
+        public async Task<ActionResult> UpdateVendorProfile(Vendor vendor)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            var existingVendor = await _vendorRepository.GetVendorByUserIdAsync(userId);
+
+            if (existingVendor == null)
+            {
+                return NotFound("Vendor profile not found.");
+            }
+
+            existingVendor.StoreName = vendor.StoreName;
+            existingVendor.Description = vendor.Description;
+            existingVendor.ContactEmail = vendor.ContactEmail;
+
+            await _vendorRepository.UpdateVendorProfileAsync(existingVendor);
+
+            return Ok(new
+            {
+                message = "Vendor profile updated successfully.",
+                vendorId = existingVendor.Id
             });
         }
     }

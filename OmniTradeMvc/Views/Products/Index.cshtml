@@ -1,25 +1,26 @@
 ﻿@model IEnumerable<OmniTradeMvc.Models.ProductViewModel>
 
 @{
-    ViewData["Title"] = "Products";
+    ViewData["Title"] = "Products Catalog";
     var products = Model?.ToList() ?? new List<OmniTradeMvc.Models.ProductViewModel>();
 }
 
-<div class="container mt-4">
+<div class="container py-4">
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h1 class="fw-bold mb-1">Products</h1>
-            <p class="text-muted mb-0">
-                Browse products available on OmniTrade.
+    <!-- Header Section -->
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h1 class="fw-bold text-dark">Products Catalog</h1>
+            <p class="text-secondary mb-0">
+                Discover and shop amazing items available across OmniTrade.
             </p>
         </div>
     </div>
 
-    <!-- Search -->
+    <!-- Search Section -->
     <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body">
+        <div class="card-body p-4">
+
             <form asp-controller="Products"
                   asp-action="Search"
                   method="get"
@@ -39,8 +40,10 @@
                         Search
                     </button>
                 </div>
+
             </form>
 
+            <!-- Search Error -->
             @if (!string.IsNullOrWhiteSpace(ViewBag.SearchError))
             {
                 <div class="alert alert-danger mt-3 mb-0">
@@ -48,95 +51,131 @@
                 </div>
             }
 
+            <!-- Search Result Information -->
             @if (!string.IsNullOrWhiteSpace(ViewBag.SearchTerm))
             {
                 <div class="mt-3">
-                    <span class="text-muted">
+
+                    <span class="text-secondary">
                         Search results for:
                     </span>
-                    <strong>"@ViewBag.SearchTerm"</strong>
+
+                    <strong>
+                        "@ViewBag.SearchTerm"
+                    </strong>
 
                     <a asp-controller="Products"
                        asp-action="Index"
                        class="btn btn-sm btn-outline-secondary ms-2">
                         Clear Search
                     </a>
+
                 </div>
             }
+
         </div>
     </div>
 
-    <!-- Product count -->
+    <!-- Product Count -->
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">
+
+        <h5 class="mb-0 text-dark">
             @products.Count product@(products.Count == 1 ? "" : "s") found
         </h5>
+
     </div>
 
-    @if (!products.Any())
-    {
-        <div class="alert alert-info text-center py-4">
-            <h5>No products found</h5>
-            <p class="mb-0">
-                Try searching for a different product.
-            </p>
-        </div>
-    }
-    else
-    {
-        <div class="row">
+    <!-- Products Grid -->
+    <div class="row g-4">
+
+        @if (products.Any())
+        {
             @foreach (var product in products)
             {
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="card h-100 shadow-sm border-0">
+                <div class="col-md-4">
 
-                        <div class="card-body d-flex flex-column">
+                    <div class="card h-100 shadow-sm border-0 product-card">
 
+                        <div class="card-body d-flex flex-column p-4">
+
+                            <!-- Category Badge -->
                             <div class="mb-2">
-                                <span class="badge bg-secondary">
+                                <span class="badge bg-secondary text-uppercase small">
                                     @product.Category
                                 </span>
                             </div>
 
-                            <h5 class="card-title fw-bold">
+                            <!-- Product Name -->
+                            <h5 class="card-title fw-bold text-dark mb-2">
                                 @product.Name
                             </h5>
 
-                            <p class="card-text text-muted flex-grow-1">
+                            <!-- Description -->
+                            <p class="card-text text-muted small flex-grow-1">
                                 @product.Description
                             </p>
 
-                            <div class="mb-2">
-                                <span class="fs-4 fw-bold text-primary">
+                            <!-- Price & Stock -->
+                            <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+
+                                <span class="fs-5 fw-bold text-primary">
                                     ₹@product.Price.ToString("N2")
                                 </span>
+
+                                @if (product.StockQuantity > 0)
+                                {
+                                    <span class="badge bg-success">
+                                        @product.StockQuantity in stock
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">
+                                        Out of stock
+                                    </span>
+                                }
+
                             </div>
 
-                            @if (product.StockQuantity > 0)
-                            {
-                                <p class="text-success mb-3">
-                                    <strong>In Stock:</strong>
-                                    @product.StockQuantity
-                                </p>
-                            }
-                            else
-                            {
-                                <p class="text-danger mb-3">
-                                    <strong>Out of Stock</strong>
-                                </p>
-                            }
-
+                            <!-- View Details -->
                             <a asp-controller="Products"
                                asp-action="Details"
                                asp-route-id="@product.Id"
-                               class="btn btn-primary w-100">
+                               class="btn btn-outline-primary w-100 fw-semibold">
                                 View Details
                             </a>
 
                         </div>
+
                     </div>
+
                 </div>
             }
-        </div>
-    }
+        }
+        else
+        {
+            <!-- No Products -->
+            <div class="col-12 text-center py-5">
+
+                <div class="card border-0 shadow-sm">
+
+                    <div class="card-body py-5">
+
+                        <h5 class="text-muted mb-2">
+                            No products found
+                        </h5>
+
+                        <p class="text-muted mb-0">
+                            Try searching for a different product.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
 </div>
