@@ -1,4 +1,5 @@
-﻿using OmniTradeWebApi.Models;
+﻿using OmniTradeWebApi.DTOs;
+using OmniTradeWebApi.Models;
 
 namespace OmniTradeWebApi.Repositories
 {
@@ -13,5 +14,7 @@ namespace OmniTradeWebApi.Repositories
         Task UpdateOrderStatusAsync(int orderId, string status);
 
         Task<bool> VendorHasOrderAsync(int orderId, int vendorId);
+
+        Task<VendorOrderDetailsDto?> GetVendorOrderDetailsAsync(int orderId, int vendorId);
     }
 }
