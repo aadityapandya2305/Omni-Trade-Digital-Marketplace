@@ -1,3 +1,5 @@
+using OmniTradeMvc.Services;
+
 namespace OmniTradeMvc
 {
     public class Program
@@ -13,6 +15,10 @@ namespace OmniTradeMvc
             {
                 client.BaseAddress = new Uri("https://localhost:7286/");
             });
+
+            builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddScoped<IAdminService, AdminService>();
 
             builder.Services.AddDistributedMemoryCache();
 
