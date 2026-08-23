@@ -1,0 +1,58 @@
+﻿@model OmniTradeMvc.Models.PlatformAnalyticsViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Admin Dashboard</h1>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Gross Merchandise Value</h5>
+                    <h2 class="card-text">
+                        ₹@Model.GMV.ToString("N2")
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Active Vendors</h5>
+                    <h2 class="card-text">
+                        @Model.TotalActiveVendors
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total Orders</h5>
+                    <h2 class="card-text">
+                        @Model.TotalOrders
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-controller="Admin"
+           asp-action="Users"
+           class="btn btn-primary me-2">
+            Manage Users
+        </a>
+
+        <a asp-controller="Admin"
+           asp-action="Vendors"
+           class="btn btn-secondary">
+            Manage Vendors
+        </a>
+    </div>
+</div>
