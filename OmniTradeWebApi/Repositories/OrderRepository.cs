@@ -14,7 +14,10 @@ namespace OmniTradeWebApi.Repositories
             _context = context;
         }
 
-        public async Task<Order> CreateOrderFromCartAsync(int customerId)
+        public async Task<Order> CreateOrderFromCartAsync(
+            int customerId,
+            string shippingAddress,
+            string paymentMethod)
         {
             await using var transaction =
                 await _context.Database.BeginTransactionAsync();
@@ -62,7 +65,9 @@ namespace OmniTradeWebApi.Repositories
                     CustomerId = customerId,
                     OrderDate = DateTime.UtcNow,
                     TotalAmount = totalAmount,
-                    Status = "Pending"
+                    Status = "Pending",
+                    ShippingAddress = shippingAddress,
+                    PaymentMethod = paymentMethod
                 };
 
                 await _context.Orders.AddAsync(order);
@@ -99,7 +104,8 @@ namespace OmniTradeWebApi.Repositories
             }
         }
 
-        public async Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(int customerId)
+        public async Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(
+            int customerId)
         {
             return await _context.Orders
                 .Include(o => o.OrderItems)
@@ -111,16 +117,17 @@ namespace OmniTradeWebApi.Repositories
         public async Task<Order?> GetCustomerOrderDetailsAsync(
             int customerId,
             int orderId)
-                {
-                    return await _context.Orders
-                        .Include(o => o.OrderItems)
-                            .ThenInclude(oi => oi.Product)
-                        .FirstOrDefaultAsync(o =>
-                            o.Id == orderId &&
-                            o.CustomerId == customerId);
-                }
+        {
+            return await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .FirstOrDefaultAsync(o =>
+                    o.Id == orderId &&
+                    o.CustomerId == customerId);
+        }
 
-        public async Task<IEnumerable<OrderItem>> GetOrderItemsByVendorIdAsync(int vendorId)
+        public async Task<IEnumerable<OrderItem>> GetOrderItemsByVendorIdAsync(
+            int vendorId)
         {
             return await _context.OrderItems
                 .Include(o => o.Order)
@@ -129,7 +136,9 @@ namespace OmniTradeWebApi.Repositories
                 .ToListAsync();
         }
 
-        public async Task UpdateOrderStatusAsync(int orderId,string status)
+        public async Task UpdateOrderStatusAsync(
+            int orderId,
+            string status)
         {
             var order = await _context.Orders
                 .FirstOrDefaultAsync(o => o.Id == orderId);
@@ -145,7 +154,8 @@ namespace OmniTradeWebApi.Repositories
                 "Pending",
                 "Processing",
                 "Shipped",
-                "Delivered"
+                "Delivered",
+                "Cancelled"
             };
 
             if (!validStatuses.Contains(status))
@@ -170,20 +180,80 @@ namespace OmniTradeWebApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> VendorHasOrderAsync(int orderId, int vendorId)
+        public async Task CancelOrderAsync(
+            int customerId,
+            int orderId)
         {
-            return await _context.OrderItems
-                .AnyAsync(oi => oi.OrderId == orderId && oi.VendorId == vendorId);
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var order = await _context.Orders
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.Product)
+                    .FirstOrDefaultAsync(o =>
+                        o.Id == orderId &&
+                        o.CustomerId == customerId);
+
+                if (order == null)
+                {
+                    throw new InvalidOperationException(
+                        "Order not found.");
+                }
+
+                if (order.Status != "Pending")
+                {
+                    throw new InvalidOperationException(
+                        $"Order cannot be cancelled because its current status is '{order.Status}'.");
+                }
+
+                foreach (var orderItem in order.OrderItems)
+                {
+                    if (orderItem.Product == null)
+                    {
+                        throw new InvalidOperationException(
+                            "A product associated with this order could not be found.");
+                    }
+
+                    orderItem.Product.StockQuantity +=
+                        orderItem.Quantity;
+                }
+
+                order.Status = "Cancelled";
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
-        public async Task<VendorOrderDetailsDto?> GetVendorOrderDetailsAsync(int orderId, int vendorId)
+        public async Task<bool> VendorHasOrderAsync(
+            int orderId,
+            int vendorId)
+        {
+            return await _context.OrderItems
+                .AnyAsync(oi =>
+                    oi.OrderId == orderId &&
+                    oi.VendorId == vendorId);
+        }
+
+        public async Task<VendorOrderDetailsDto?> GetVendorOrderDetailsAsync(
+            int orderId,
+            int vendorId)
         {
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
                 .FirstOrDefaultAsync(o =>
                     o.Id == orderId &&
-                    o.OrderItems.Any(oi => oi.VendorId == vendorId));
+                    o.OrderItems.Any(
+                        oi => oi.VendorId == vendorId));
 
             if (order == null)
             {

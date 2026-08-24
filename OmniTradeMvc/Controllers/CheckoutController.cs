@@ -37,7 +37,6 @@ namespace OmniTradeMvc.Controllers
         }
 
         // GET: /Checkout
-        // Shows the cart summary before placing the order
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -66,11 +65,11 @@ namespace OmniTradeMvc.Controllers
                         "Products");
                 }
 
-                var cart =
+                var cartItems =
                     await response.Content
-                        .ReadFromJsonAsync<CartViewModel>();
+                        .ReadFromJsonAsync<List<CartApiItem>>();
 
-                if (cart == null || cart.Items.Count == 0)
+                if (cartItems == null || cartItems.Count == 0)
                 {
                     TempData["ErrorMessage"] =
                         "Your cart is empty.";
@@ -79,6 +78,23 @@ namespace OmniTradeMvc.Controllers
                         "Index",
                         "Products");
                 }
+
+                var cart = new CartViewModel
+                {
+                    Items = cartItems
+                        .Select(item => new CartItemViewModel
+                        {
+                            Id = item.Id,
+                            CustomerId = item.CustomerId,
+                            ProductId = item.ProductId,
+                            ProductName =
+                                item.Product?.Name ?? "Unknown Product",
+                            Price =
+                                item.Product?.Price ?? 0,
+                            Quantity = item.Quantity
+                        })
+                        .ToList()
+                };
 
                 var checkoutModel = new CheckoutViewModel
                 {
@@ -99,7 +115,6 @@ namespace OmniTradeMvc.Controllers
         }
 
         // POST: /Checkout/PlaceOrder
-        // Creates an order from the customer's current cart
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PlaceOrder(
@@ -112,36 +127,34 @@ namespace OmniTradeMvc.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
+            var client = GetClient();
+
             if (!ModelState.IsValid)
             {
-                var clientForCart = GetClient();
-
-                var cartResponse =
-                    await clientForCart.GetAsync(
-                        $"api/Cart/{customerId.Value}");
-
-                if (cartResponse.IsSuccessStatusCode)
-                {
-                    model.Cart =
-                        await cartResponse.Content
-                            .ReadFromJsonAsync<CartViewModel>()
-                        ?? new CartViewModel();
-                }
+                model.Cart =
+                    await GetCartAsync(
+                        client,
+                        customerId.Value);
 
                 return View("Index", model);
             }
 
-            var client = GetClient();
-
             try
             {
-                // Web API creates the order from the customer's cart.
-                // The API endpoint is:
+                // Send shipping address and payment method
+                // to the Web API.
+                var checkoutRequest = new
+                {
+                    ShippingAddress = model.ShippingAddress,
+                    PaymentMethod = model.PaymentMethod
+                };
+
+                // Web API endpoint:
                 // POST api/Orders/checkout/{customerId}
                 var response =
-                    await client.PostAsync(
+                    await client.PostAsJsonAsync(
                         $"api/Orders/checkout/{customerId.Value}",
-                        null);
+                        checkoutRequest);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -163,7 +176,7 @@ namespace OmniTradeMvc.Controllers
                         "Order was created, but its details could not be loaded.";
 
                     return RedirectToAction(
-                        nameof(Index),
+                        "Index",
                         "Orders");
                 }
 
@@ -183,18 +196,11 @@ namespace OmniTradeMvc.Controllers
                     "Unable to connect to the order service.");
             }
 
-            // Re-load cart if order creation failed
-            var retryCartResponse =
-                await client.GetAsync(
-                    $"api/Cart/{customerId.Value}");
-
-            if (retryCartResponse.IsSuccessStatusCode)
-            {
-                model.Cart =
-                    await retryCartResponse.Content
-                        .ReadFromJsonAsync<CartViewModel>()
-                    ?? new CartViewModel();
-            }
+            // Reload cart if order creation failed
+            model.Cart =
+                await GetCartAsync(
+                    client,
+                    customerId.Value);
 
             return View("Index", model);
         }
@@ -214,8 +220,6 @@ namespace OmniTradeMvc.Controllers
 
             try
             {
-                // Use the customer-specific endpoint so the API
-                // verifies that this order belongs to the logged-in user.
                 var response =
                     await client.GetAsync(
                         $"api/Orders/customer/{customerId.Value}/{id}");
@@ -230,11 +234,11 @@ namespace OmniTradeMvc.Controllers
                         "Orders");
                 }
 
-                var order =
+                var apiOrder =
                     await response.Content
-                        .ReadFromJsonAsync<OrderViewModel>();
+                        .ReadFromJsonAsync<OrderApiResponse>();
 
-                if (order == null)
+                if (apiOrder == null)
                 {
                     TempData["ErrorMessage"] =
                         "Order not found.";
@@ -243,6 +247,41 @@ namespace OmniTradeMvc.Controllers
                         "Index",
                         "Orders");
                 }
+
+                var order = new OrderViewModel
+                {
+                    Id = apiOrder.Id,
+
+                    CustomerId = apiOrder.CustomerId,
+
+                    OrderDate =
+                        apiOrder.OrderDate ?? DateTime.Now,
+
+                    Status = apiOrder.Status,
+
+                    ShippingAddress =
+                        apiOrder.ShippingAddress ?? string.Empty,
+
+                    PaymentMethod =
+                        apiOrder.PaymentMethod ?? string.Empty,
+
+                    TotalAmount = apiOrder.TotalAmount,
+
+                    Items = apiOrder.OrderItems
+                        .Select(item => new OrderItemViewModel
+                        {
+                            ProductId = item.ProductId,
+
+                            ProductName =
+                                item.Product?.Name
+                                ?? "Unknown Product",
+
+                            Price = item.UnitPrice,
+
+                            Quantity = item.Quantity
+                        })
+                        .ToList()
+                };
 
                 return View(order);
             }
@@ -255,6 +294,103 @@ namespace OmniTradeMvc.Controllers
                     "Index",
                     "Orders");
             }
+        }
+
+        private async Task<CartViewModel> GetCartAsync(
+            HttpClient client,
+            int customerId)
+        {
+            var response =
+                await client.GetAsync(
+                    $"api/Cart/{customerId}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new CartViewModel();
+            }
+
+            var cartItems =
+                await response.Content
+                    .ReadFromJsonAsync<List<CartApiItem>>()
+                ?? new List<CartApiItem>();
+
+            return new CartViewModel
+            {
+                Items = cartItems
+                    .Select(item => new CartItemViewModel
+                    {
+                        Id = item.Id,
+                        CustomerId = item.CustomerId,
+                        ProductId = item.ProductId,
+                        ProductName =
+                            item.Product?.Name ?? "Unknown Product",
+                        Price =
+                            item.Product?.Price ?? 0,
+                        Quantity = item.Quantity
+                    })
+                    .ToList()
+            };
+        }
+
+        // API cart response models
+
+        private class CartApiItem
+        {
+            public int Id { get; set; }
+
+            public int CustomerId { get; set; }
+
+            public int ProductId { get; set; }
+
+            public int Quantity { get; set; }
+
+            public CartApiProduct? Product { get; set; }
+        }
+
+        private class CartApiProduct
+        {
+            public string? Name { get; set; }
+
+            public decimal Price { get; set; }
+        }
+
+        // API order response models
+
+        private class OrderApiResponse
+        {
+            public int Id { get; set; }
+
+            public int CustomerId { get; set; }
+
+            public DateTime? OrderDate { get; set; }
+
+            public decimal TotalAmount { get; set; }
+
+            public string Status { get; set; } = string.Empty;
+
+            public string? ShippingAddress { get; set; }
+
+            public string? PaymentMethod { get; set; }
+
+            public List<OrderApiItem> OrderItems { get; set; } = new();
+        }
+
+        private class OrderApiItem
+        {
+            public int ProductId { get; set; }
+
+            public int Quantity { get; set; }
+
+            public decimal UnitPrice { get; set; }
+
+            public OrderApiProduct? Product { get; set; }
+        }
+
+        private class OrderApiProduct
+        {
+            public string? Name { get; set; }
+
+            public decimal Price { get; set; }
         }
     }
 }
