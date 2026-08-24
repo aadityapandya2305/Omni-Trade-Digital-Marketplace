@@ -20,6 +20,7 @@ namespace OmniTradeMvc
 
             builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IVendorService, VendorService>();
 
             builder.Services.AddDistributedMemoryCache();
 

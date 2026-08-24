@@ -1,0 +1,67 @@
+﻿@model OmniTradeMvc.Models.VendorProfileViewModel
+
+@{
+    ViewData["Title"] = "Store Profile";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Store Profile</h1>
+
+        <a asp-controller="Vendors"
+           asp-action="Dashboard"
+           class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <form asp-controller="Vendors" asp-action="Profile" method="post">
+
+                        <input type="hidden" asp-for="VendorId" />
+                        <input type="hidden" asp-for="IsApproved" />
+
+                        <div class="mb-3">
+                            <label asp-for="StoreName" class="form-label fw-semibold"></label>
+                            <input asp-for="StoreName" class="form-control" />
+                            <span asp-validation-for="StoreName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-semibold"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ContactEmail" class="form-label fw-semibold"></label>
+                            <input asp-for="ContactEmail" class="form-control" />
+                            <span asp-validation-for="ContactEmail" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Save Changes
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
