@@ -13,6 +13,7 @@ namespace OmniTradeMvc.Controllers
             _httpClientFactory = httpClientFactory;
         }
 
+        // GET: /Products
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -27,10 +28,13 @@ namespace OmniTradeMvc.Controllers
             }
             catch (HttpRequestException)
             {
+                ViewBag.SearchError = "Unable to connect to the product service.";
+
                 return View(new List<ProductViewModel>());
             }
         }
 
+        // GET: /Products/Search?name=...
         [HttpGet]
         public async Task<IActionResult> Search(string name)
         {
@@ -59,9 +63,15 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
+        // GET: /Products/Details/1
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
+            if (id <= 0)
+            {
+                return NotFound();
+            }
+
             try
             {
                 var client = _httpClientFactory.CreateClient("OmniTradeApi");

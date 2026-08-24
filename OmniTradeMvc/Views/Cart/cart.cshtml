@@ -4,15 +4,43 @@
     ViewData["Title"] = "My Cart";
 }
 
-<div class="container mt-4">
+<div class="container py-4">
 
     <!-- Cart Header -->
-    <div class="mb-4">
-        <h1 class="fw-bold">My Cart</h1>
-        <p class="text-muted">
-            Review the products you've added to your cart.
-        </p>
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h1 class="fw-bold text-dark">My Cart</h1>
+            <p class="text-secondary mb-0">
+                Review and manage the products you've added to your cart.
+            </p>
+        </div>
     </div>
+
+    <!-- Success Message -->
+    @if (TempData["CartMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["CartMessage"]
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+        </div>
+    }
+
+    <!-- Error Message -->
+    @if (TempData["CartError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["CartError"]
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+        </div>
+    }
 
     @if (Model.Items == null || !Model.Items.Any())
     {
@@ -20,7 +48,11 @@
         <div class="card shadow-sm border-0">
             <div class="card-body text-center py-5">
 
-                <h3 class="mb-3">
+                <div class="mb-3">
+                    <span class="fs-1">🛒</span>
+                </div>
+
+                <h3 class="fw-bold mb-3">
                     Your cart is empty
                 </h3>
 
@@ -30,7 +62,7 @@
 
                 <a asp-controller="Products"
                    asp-action="Index"
-                   class="btn btn-primary">
+                   class="btn btn-primary px-4">
                     Browse Products
                 </a>
 
@@ -39,61 +71,113 @@
     }
     else
     {
-        <div class="row">
+        <div class="row g-4">
 
             <!-- Cart Items -->
             <div class="col-lg-8">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">
+                        Cart Items
+                    </h5>
+
+                    <span class="text-muted">
+                        @Model.Items.Count item@(Model.Items.Count == 1 ? "" : "s")
+                    </span>
+                </div>
 
                 @foreach (var item in Model.Items)
                 {
                     <div class="card shadow-sm border-0 mb-3">
 
-                        <div class="card-body">
+                        <div class="card-body p-4">
 
-                            <div class="row align-items-center">
+                            <div class="row align-items-center g-3">
 
                                 <!-- Product -->
-                                <div class="col-md-5">
-                                    <h5 class="fw-bold mb-1">
+                                <div class="col-md-4">
+
+                                    <h5 class="fw-bold text-dark mb-1">
                                         @item.ProductName
                                     </h5>
 
                                     <small class="text-muted">
                                         Product ID: @item.ProductId
                                     </small>
+
                                 </div>
 
                                 <!-- Price -->
                                 <div class="col-md-2">
-                                    <span class="text-muted">
+
+                                    <small class="text-muted d-block">
                                         Price
+                                    </small>
+
+                                    <span class="fw-bold">
+                                        ₹@item.Price.ToString("N2")
                                     </span>
 
-                                    <div class="fw-bold">
-                                        ₹@item.Price.ToString("N2")
-                                    </div>
                                 </div>
 
                                 <!-- Quantity -->
-                                <div class="col-md-2">
-                                    <span class="text-muted">
-                                        Quantity
-                                    </span>
+                                <div class="col-md-3">
 
-                                    <div class="fw-bold">
-                                        @item.Quantity
-                                    </div>
+                                    <small class="text-muted d-block mb-1">
+                                        Quantity
+                                    </small>
+
+                                    <form asp-controller="Cart"
+                                          asp-action="Update"
+                                          method="post"
+                                          class="d-flex align-items-center gap-2">
+
+                                        <input type="hidden"
+                                               name="id"
+                                               value="@item.Id" />
+
+                                        <input type="number"
+                                               name="quantity"
+                                               value="@item.Quantity"
+                                               min="1"
+                                               class="form-control"
+                                               style="width: 75px;" />
+
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-primary">
+                                            Update
+                                        </button>
+
+                                    </form>
+
                                 </div>
 
-                                <!-- Item Total -->
+                                <!-- Total & Remove -->
                                 <div class="col-md-3 text-md-end">
-                                    <span class="text-muted">
-                                        Total
-                                    </span>
 
-                                    <div class="fs-5 fw-bold text-primary">
+                                    <small class="text-muted d-block">
+                                        Total
+                                    </small>
+
+                                    <div class="fs-5 fw-bold text-primary mb-2">
                                         ₹@item.Total.ToString("N2")
                                     </div>
+
+                                    <form asp-controller="Cart"
+                                          asp-action="Remove"
+                                          method="post">
+
+                                        <input type="hidden"
+                                               name="id"
+                                               value="@item.Id" />
+
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger">
+                                            Remove
+                                        </button>
+
+                                    </form>
+
                                 </div>
 
                             </div>
@@ -110,14 +194,14 @@
 
                 <div class="card shadow-sm border-0">
 
-                    <div class="card-body">
+                    <div class="card-body p-4">
 
-                        <h4 class="fw-bold mb-4">
+                        <h4 class="fw-bold text-dark mb-4">
                             Cart Summary
                         </h4>
 
                         <div class="d-flex justify-content-between mb-3">
-                            <span>
+                            <span class="text-muted">
                                 Items
                             </span>
 
@@ -128,7 +212,8 @@
 
                         <hr />
 
-                        <div class="d-flex justify-content-between mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+
                             <span class="fw-bold">
                                 Total
                             </span>
@@ -136,9 +221,10 @@
                             <span class="fs-4 fw-bold text-primary">
                                 ₹@Model.TotalAmount.ToString("N2")
                             </span>
+
                         </div>
 
-                        <!-- Checkout will be connected later -->
+                        <!-- Checkout belongs to Anshul's part -->
                         <button type="button"
                                 class="btn btn-success w-100 mb-2"
                                 disabled>
