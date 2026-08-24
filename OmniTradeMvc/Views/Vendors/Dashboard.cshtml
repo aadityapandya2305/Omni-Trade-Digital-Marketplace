@@ -1,0 +1,105 @@
+﻿@model OmniTradeMvc.Models.VendorDashboardViewModel
+
+@{
+    ViewData["Title"] = "Vendor Dashboard";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold text-dark mb-1">Vendor Dashboard</h1>
+            <p class="text-secondary mb-0">
+                @Model.StoreName
+            </p>
+        </div>
+
+        @if (Model.IsApproved)
+        {
+            <span class="badge bg-success fs-6">Approved</span>
+        }
+        else
+        {
+            <span class="badge bg-warning text-dark fs-6">Pending Approval</span>
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (!Model.IsApproved)
+    {
+        <div class="alert alert-info">
+            Your store is awaiting admin approval. You'll be able to list
+            products for sale once your store has been approved.
+        </div>
+    }
+
+    <!-- Stat Cards -->
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total Products</h5>
+                    <h2 class="card-text">
+                        @Model.TotalProducts
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total Stock</h5>
+                    <h2 class="card-text">
+                        @Model.TotalStock
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Store Status</h5>
+                    <h2 class="card-text">
+                        @(Model.IsApproved ? "Active" : "Pending")
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-4">
+        <a asp-controller="Vendors"
+           asp-action="Products"
+           class="btn btn-primary me-2">
+            Manage Products
+        </a>
+
+        <a asp-controller="Orders"
+           asp-action="Incoming"
+           class="btn btn-primary me-2">
+            Incoming Orders
+        </a>
+
+        <a asp-controller="Vendors"
+           asp-action="Profile"
+           class="btn btn-secondary">
+            Edit Store Profile
+        </a>
+    </div>
+</div>

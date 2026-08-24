@@ -1,0 +1,62 @@
+﻿@model OmniTradeMvc.Models.VendorProfileViewModel
+
+@{
+    ViewData["Title"] = "Register Your Store";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold text-dark">Register Your Store</h2>
+                    <p class="text-muted">
+                        Set up your OmniTrade storefront to start selling.
+                    </p>
+                </div>
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <form asp-controller="Vendors" asp-action="Register" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="StoreName" class="form-label fw-semibold"></label>
+                        <input asp-for="StoreName" class="form-control" placeholder="My Awesome Store" />
+                        <span asp-validation-for="StoreName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-semibold"></label>
+                        <textarea asp-for="Description" class="form-control" rows="3"
+                                  placeholder="Tell customers what your store is about..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="ContactEmail" class="form-label fw-semibold"></label>
+                        <input asp-for="ContactEmail" class="form-control" placeholder="store@example.com" />
+                        <span asp-validation-for="ContactEmail" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            Register Store
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
