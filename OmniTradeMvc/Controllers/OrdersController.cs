@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OmniTradeMvc.Models;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using OmniTradeMvc.Services;
 
@@ -10,13 +11,17 @@ namespace OmniTradeMvc.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IOrderService _orderService;
 
-        // TODO: Replace with real logged-in user id once Auth/session is wired up (Harsh's part)
-        private const int CurrentCustomerId = 1;
-
-        public OrdersController(IHttpClientFactory httpClientFactory,IOrderService orderService)
+        public OrdersController(
+            IHttpClientFactory httpClientFactory,
+            IOrderService orderService)
         {
             _httpClientFactory = httpClientFactory;
             _orderService = orderService;
+        }
+
+        private int? GetCurrentUserId()
+        {
+            return HttpContext.Session.GetInt32("UserId");
         }
 
         // GET: /Orders
@@ -24,54 +29,96 @@ namespace OmniTradeMvc.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            var customerId = GetCurrentUserId();
+
+            if (customerId == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
             var client = _httpClientFactory.CreateClient("OmniTradeApi");
 
             try
             {
-                // Assumes WebApi exposes: GET api/Orders/customer/{customerId}
-                var response = await client.GetAsync($"api/Orders/customer/{CurrentCustomerId}");
+                var token = HttpContext.Session.GetString("Token");
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", token);
+                }
+
+                var response = await client.GetAsync(
+                    $"api/Orders/customer/{customerId.Value}");
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    TempData["ErrorMessage"] = "Unable to load your orders.";
+                    TempData["ErrorMessage"] =
+                        "Unable to load your orders.";
+
                     return View(new List<OrderViewModel>());
                 }
 
-                var orders = await response.Content.ReadFromJsonAsync<List<OrderViewModel>>()
-                             ?? new List<OrderViewModel>();
+                var orders =
+                    await response.Content
+                        .ReadFromJsonAsync<List<OrderViewModel>>()
+                    ?? new List<OrderViewModel>();
 
                 return View(orders);
             }
             catch (HttpRequestException)
             {
-                TempData["ErrorMessage"] = "Unable to connect to the order service.";
+                TempData["ErrorMessage"] =
+                    "Unable to connect to the order service.";
+
                 return View(new List<OrderViewModel>());
             }
         }
 
         // GET: /Orders/Details/5
-        // Shows full details for a single order
+        // Shows full details for a single customer order
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
+            var customerId = GetCurrentUserId();
+
+            if (customerId == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
             var client = _httpClientFactory.CreateClient("OmniTradeApi");
 
             try
             {
-                // Assumes WebApi exposes: GET api/Orders/{id}
-                var response = await client.GetAsync($"api/Orders/{id}");
+                var token = HttpContext.Session.GetString("Token");
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", token);
+                }
+
+                var response = await client.GetAsync(
+                    $"api/Orders/customer/{customerId.Value}/{id}");
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    TempData["ErrorMessage"] = "Order not found.";
+                    TempData["ErrorMessage"] =
+                        "Order not found.";
+
                     return RedirectToAction(nameof(Index));
                 }
 
-                var order = await response.Content.ReadFromJsonAsync<OrderViewModel>();
+                var order =
+                    await response.Content
+                        .ReadFromJsonAsync<OrderViewModel>();
 
                 if (order == null)
                 {
-                    TempData["ErrorMessage"] = "Order not found.";
+                    TempData["ErrorMessage"] =
+                        "Order not found.";
+
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -79,7 +126,9 @@ namespace OmniTradeMvc.Controllers
             }
             catch (HttpRequestException)
             {
-                TempData["ErrorMessage"] = "Unable to connect to the order service.";
+                TempData["ErrorMessage"] =
+                    "Unable to connect to the order service.";
+
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -102,7 +151,8 @@ namespace OmniTradeMvc.Controllers
                 }
 
                 var orders =
-                    await _orderService.GetIncomingOrdersAsync(vendorId.Value);
+                    await _orderService.GetIncomingOrdersAsync(
+                        vendorId.Value);
 
                 return View(orders);
             }
@@ -122,7 +172,8 @@ namespace OmniTradeMvc.Controllers
         {
             try
             {
-                var vendorId = await _orderService.GetCurrentVendorIdAsync();
+                var vendorId =
+                    await _orderService.GetCurrentVendorIdAsync();
 
                 if (vendorId == null)
                 {
@@ -159,7 +210,9 @@ namespace OmniTradeMvc.Controllers
         // POST: /Orders/UpdateStatus
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateStatus(int orderId, string status)
+        public async Task<IActionResult> UpdateStatus(
+            int orderId,
+            string status)
         {
             try
             {

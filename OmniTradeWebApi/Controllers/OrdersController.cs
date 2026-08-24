@@ -78,6 +78,39 @@ namespace OmniTradeWebApi.Controllers
             return Ok(orders);
         }
 
+        [HttpGet("customer/{customerId}/{orderId}")]
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult> GetCustomerOrderDetails(
+            int customerId,
+            int orderId)
+                {
+                    var userIdClaim =
+                        User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (userIdClaim == null ||
+                        !int.TryParse(userIdClaim, out int userId))
+                    {
+                        return Unauthorized();
+                    }
+
+                    if (userId != customerId)
+                    {
+                        return Forbid();
+                    }
+
+                    var order =
+                        await _orderRepository.GetCustomerOrderDetailsAsync(
+                            customerId,
+                            orderId);
+
+                    if (order == null)
+                    {
+                        return NotFound("Order not found.");
+                    }
+
+                    return Ok(order);
+                }
+
         [HttpGet("vendor/{vendorId}")]
         [Authorize(Roles = "Vendor")]
         public async Task<ActionResult> GetVendorOrders(int vendorId)

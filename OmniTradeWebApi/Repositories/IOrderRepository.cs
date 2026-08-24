@@ -16,5 +16,7 @@ namespace OmniTradeWebApi.Repositories
         Task<bool> VendorHasOrderAsync(int orderId, int vendorId);
 
         Task<VendorOrderDetailsDto?> GetVendorOrderDetailsAsync(int orderId, int vendorId);
+
+        Task<Order?> GetCustomerOrderDetailsAsync(int customerId, int orderId);
     }
 }

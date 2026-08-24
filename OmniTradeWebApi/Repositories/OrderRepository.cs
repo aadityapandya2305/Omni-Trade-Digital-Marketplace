@@ -108,6 +108,18 @@ namespace OmniTradeWebApi.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Order?> GetCustomerOrderDetailsAsync(
+            int customerId,
+            int orderId)
+                {
+                    return await _context.Orders
+                        .Include(o => o.OrderItems)
+                            .ThenInclude(oi => oi.Product)
+                        .FirstOrDefaultAsync(o =>
+                            o.Id == orderId &&
+                            o.CustomerId == customerId);
+                }
+
         public async Task<IEnumerable<OrderItem>> GetOrderItemsByVendorIdAsync(int vendorId)
         {
             return await _context.OrderItems
