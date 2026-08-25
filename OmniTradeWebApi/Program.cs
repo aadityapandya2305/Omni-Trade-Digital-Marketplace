@@ -16,7 +16,7 @@ namespace OmniTradeWebApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.WebHost.UseUrls("http://localhost:5108");
+            builder.WebHost.UseUrls("https://localhost:7286");
 
             // Add services to the container.
 
