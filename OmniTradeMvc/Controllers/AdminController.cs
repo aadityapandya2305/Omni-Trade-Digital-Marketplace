@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using OmniTradeMvc.Filters;
 using OmniTradeMvc.Services;
 
 namespace OmniTradeMvc.Controllers
 {
+    [SessionAuthorize("Admin")]
     public class AdminController : Controller
     {
         private readonly IAdminService _adminService;

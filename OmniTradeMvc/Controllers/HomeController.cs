@@ -8,10 +8,33 @@ namespace OmniTradeMvc.Controllers
     {
         public IActionResult Index()
         {
-            return View();
+            var role = HttpContext.Session.GetString("Role");
+
+            switch (role)
+            {
+                case "Admin":
+                    return RedirectToAction("Dashboard", "Admin");
+
+                case "Vendor":
+                    return RedirectToAction("Dashboard", "Vendors");
+
+                case "Customer":
+                    ViewData["Username"] = HttpContext.Session.GetString("Username");
+                    return View("CustomerDashboard");
+
+                default:
+                    return View();
+            }
         }
 
         public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        // Shown by SessionAuthorizeAttribute when a logged-in user's role
+        // isn't allowed to access the page they requested.
+        public IActionResult AccessDenied()
         {
             return View();
         }
