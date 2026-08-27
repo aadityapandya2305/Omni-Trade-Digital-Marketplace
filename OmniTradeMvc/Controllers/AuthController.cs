@@ -56,7 +56,15 @@ namespace OmniTradeMvc.Controllers
                         return Redirect(returnUrl);
                     }
 
-                    return RedirectToAction("Index", "Home");
+                    // Send each role straight to its own dashboard, rather
+                    // than routing everyone through Home/Index.
+                    return result.Role switch
+                    {
+                        "Admin" => RedirectToAction("Dashboard", "Admin"),
+                        "Vendor" => RedirectToAction("Dashboard", "Vendors"),
+                        "Customer" => RedirectToAction("Dashboard", "Customers"),
+                        _ => RedirectToAction("Index", "Home")
+                    };
                 }
 
                 ModelState.AddModelError(string.Empty, "Invalid email or password.");
