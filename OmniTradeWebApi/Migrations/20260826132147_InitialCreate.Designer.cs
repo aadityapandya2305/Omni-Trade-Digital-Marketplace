@@ -12,7 +12,7 @@ using OmniTradeWebApi.Data;
 namespace OmniTradeWebApi.Migrations
 {
     [DbContext(typeof(OmniTradeHubContext))]
-    [Migration("20260823112928_InitialCreate")]
+    [Migration("20260826132147_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -67,6 +67,12 @@ namespace OmniTradeWebApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShippingAddress")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
                         .IsRequired()

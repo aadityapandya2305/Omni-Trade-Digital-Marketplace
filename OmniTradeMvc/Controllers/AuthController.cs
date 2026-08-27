@@ -14,15 +14,21 @@ namespace OmniTradeMvc.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
+
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(
+            LoginViewModel model,
+            string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
+
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -44,6 +50,11 @@ namespace OmniTradeMvc.Controllers
                     HttpContext.Session.SetString("Role", result.Role);
 
                     TempData["SuccessMessage"] = "Login successful.";
+
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
 
                     return RedirectToAction("Index", "Home");
                 }

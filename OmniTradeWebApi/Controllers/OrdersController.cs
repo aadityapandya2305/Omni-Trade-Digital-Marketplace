@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OmniTradeWebApi.DTOs;
 using OmniTradeWebApi.Repositories;
 using System.Security.Claims;
 
@@ -24,9 +23,7 @@ namespace OmniTradeWebApi.Controllers
 
         [HttpPost("checkout/{customerId}")]
         [Authorize(Roles = "Customer")]
-        public async Task<ActionResult> Checkout(
-            int customerId,
-            [FromBody] OrderCheckoutDto request)
+        public async Task<ActionResult> Checkout(int customerId)
         {
             var userIdClaim =
                 User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -42,25 +39,11 @@ namespace OmniTradeWebApi.Controllers
                 return Forbid();
             }
 
-            if (string.IsNullOrWhiteSpace(request.ShippingAddress))
-            {
-                return BadRequest(
-                    "Shipping address is required.");
-            }
-
-            if (string.IsNullOrWhiteSpace(request.PaymentMethod))
-            {
-                return BadRequest(
-                    "Payment method is required.");
-            }
-
             try
             {
                 var order =
-                    await _orderRepository.CreateOrderFromCartAsync(
-                        customerId,
-                        request.ShippingAddress,
-                        request.PaymentMethod);
+                    await _orderRepository
+                        .CreateOrderFromCartAsync(customerId);
 
                 return Ok(order);
             }
@@ -72,8 +55,7 @@ namespace OmniTradeWebApi.Controllers
 
         [HttpGet("customer/{customerId}")]
         [Authorize(Roles = "Customer")]
-        public async Task<ActionResult> GetCustomerOrders(
-            int customerId)
+        public async Task<ActionResult> GetCustomerOrders(int customerId)
         {
             var userIdClaim =
                 User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -96,81 +78,9 @@ namespace OmniTradeWebApi.Controllers
             return Ok(orders);
         }
 
-        [HttpGet("customer/{customerId}/{orderId}")]
-        [Authorize(Roles = "Customer")]
-        public async Task<ActionResult> GetCustomerOrderDetails(
-            int customerId,
-            int orderId)
-        {
-            var userIdClaim =
-                User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null ||
-                !int.TryParse(userIdClaim, out int userId))
-            {
-                return Unauthorized();
-            }
-
-            if (userId != customerId)
-            {
-                return Forbid();
-            }
-
-            var order =
-                await _orderRepository
-                    .GetCustomerOrderDetailsAsync(
-                        customerId,
-                        orderId);
-
-            if (order == null)
-            {
-                return NotFound("Order not found.");
-            }
-
-            return Ok(order);
-        }
-
-        [HttpPost("customer/{customerId}/{orderId}/cancel")]
-        [Authorize(Roles = "Customer")]
-        public async Task<ActionResult> CancelOrder(
-            int customerId,
-            int orderId)
-        {
-            var userIdClaim =
-                User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null ||
-                !int.TryParse(userIdClaim, out int userId))
-            {
-                return Unauthorized();
-            }
-
-            if (userId != customerId)
-            {
-                return Forbid();
-            }
-
-            try
-            {
-                await _orderRepository.CancelOrderAsync(
-                    customerId,
-                    orderId);
-
-                return Ok(new
-                {
-                    message = "Order cancelled successfully."
-                });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
         [HttpGet("vendor/{vendorId}")]
         [Authorize(Roles = "Vendor")]
-        public async Task<ActionResult> GetVendorOrders(
-            int vendorId)
+        public async Task<ActionResult> GetVendorOrders(int vendorId)
         {
             var userIdClaim =
                 User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -182,8 +92,7 @@ namespace OmniTradeWebApi.Controllers
             }
 
             var vendor =
-                await _vendorRepository
-                    .GetVendorByUserIdAsync(userId);
+                await _vendorRepository.GetVendorByUserIdAsync(userId);
 
             if (vendor == null)
             {
@@ -205,8 +114,8 @@ namespace OmniTradeWebApi.Controllers
         [HttpPatch("{orderId}/status")]
         [Authorize(Roles = "Vendor")]
         public async Task<ActionResult> UpdateOrderStatus(
-            int orderId,
-            [FromBody] string status)
+    int orderId,
+    [FromBody] string status)
         {
             var userIdClaim =
                 User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -218,8 +127,7 @@ namespace OmniTradeWebApi.Controllers
             }
 
             var vendor =
-                await _vendorRepository
-                    .GetVendorByUserIdAsync(userId);
+                await _vendorRepository.GetVendorByUserIdAsync(userId);
 
             if (vendor == null)
             {
@@ -228,9 +136,7 @@ namespace OmniTradeWebApi.Controllers
 
             var hasOrder =
                 await _orderRepository
-                    .VendorHasOrderAsync(
-                        orderId,
-                        vendor.Id);
+                    .VendorHasOrderAsync(orderId, vendor.Id);
 
             if (!hasOrder)
             {
@@ -240,14 +146,11 @@ namespace OmniTradeWebApi.Controllers
             try
             {
                 await _orderRepository
-                    .UpdateOrderStatusAsync(
-                        orderId,
-                        status);
+                    .UpdateOrderStatusAsync(orderId, status);
 
                 return Ok(new
                 {
-                    message =
-                        "Order status updated successfully."
+                    message = "Order status updated successfully."
                 });
             }
             catch (InvalidOperationException ex)
@@ -256,11 +159,36 @@ namespace OmniTradeWebApi.Controllers
             }
         }
 
+        // GET: api/Orders/5
+        // Returns full order details for the order's own customer only.
+        [HttpGet("{orderId}")]
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult> GetOrderById(int orderId)
+        {
+            var userIdClaim =
+                User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null ||
+                !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            var order =
+                await _orderRepository
+                    .GetOrderDetailsForCustomerAsync(orderId, userId);
+
+            if (order == null)
+            {
+                return NotFound("Order not found.");
+            }
+
+            return Ok(order);
+        }
+
         [HttpGet("vendor/{vendorId}/{orderId}")]
         [Authorize(Roles = "Vendor")]
-        public async Task<ActionResult> GetVendorOrderDetails(
-            int vendorId,
-            int orderId)
+        public async Task<ActionResult> GetVendorOrderDetails(int vendorId, int orderId)
         {
             var userIdClaim =
                 User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -272,8 +200,7 @@ namespace OmniTradeWebApi.Controllers
             }
 
             var vendor =
-                await _vendorRepository
-                    .GetVendorByUserIdAsync(userId);
+                await _vendorRepository.GetVendorByUserIdAsync(userId);
 
             if (vendor == null)
             {
@@ -286,10 +213,9 @@ namespace OmniTradeWebApi.Controllers
             }
 
             var orderDetails =
-                await _orderRepository
-                    .GetVendorOrderDetailsAsync(
-                        orderId,
-                        vendorId);
+                await _orderRepository.GetVendorOrderDetailsAsync(
+                    orderId,
+                    vendorId);
 
             if (orderDetails == null)
             {

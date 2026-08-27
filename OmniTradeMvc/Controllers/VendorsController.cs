@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OmniTradeMvc.Filters;
 using OmniTradeMvc.Models;
 using OmniTradeMvc.Services;
 
 namespace OmniTradeMvc.Controllers
 {
+    [SessionAuthorize("Vendor")]
     public class VendorsController : Controller
     {
         private readonly IVendorService _vendorService;

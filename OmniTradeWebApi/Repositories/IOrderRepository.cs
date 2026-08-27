@@ -5,12 +5,13 @@ namespace OmniTradeWebApi.Repositories
 {
     public interface IOrderRepository
     {
-        Task<Order> CreateOrderFromCartAsync(
-            int customerId,
-            string shippingAddress,
-            string paymentMethod);
+        Task<OrderDetailsDto> CreateOrderFromCartAsync(int customerId);
 
         Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(int customerId);
+
+        Task<OrderDetailsDto?> GetOrderDetailsForCustomerAsync(
+            int orderId,
+            int customerId);
 
         Task<IEnumerable<OrderItem>> GetOrderItemsByVendorIdAsync(int vendorId);
 
@@ -19,9 +20,5 @@ namespace OmniTradeWebApi.Repositories
         Task<bool> VendorHasOrderAsync(int orderId, int vendorId);
 
         Task<VendorOrderDetailsDto?> GetVendorOrderDetailsAsync(int orderId, int vendorId);
-
-        Task<Order?> GetCustomerOrderDetailsAsync(int customerId, int orderId);
-
-        Task CancelOrderAsync(int customerId, int orderId);
     }
 }
