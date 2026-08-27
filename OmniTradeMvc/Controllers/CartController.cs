@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OmniTradeMvc.Filters;
 using OmniTradeMvc.Models;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace OmniTradeMvc.Controllers
 {
+    [SessionAuthorize("Customer")]
     public class CartController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;

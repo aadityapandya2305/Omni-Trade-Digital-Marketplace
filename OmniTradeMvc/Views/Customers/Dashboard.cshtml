@@ -1,0 +1,75 @@
+﻿@{
+    ViewData["Title"] = "My Dashboard";
+    var username = ViewData["Username"] as string;
+}
+
+<div class="container mt-4">
+
+    <div class="p-4 mb-4 bg-light rounded-3 shadow-sm border">
+        <h1 class="fw-bold text-dark mb-1">
+            Welcome back@(string.IsNullOrWhiteSpace(username) ? "" : $", {username}")!
+        </h1>
+        <p class="text-secondary mb-0">
+            Here's a quick way to get back to shopping or check on your orders.
+        </p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4 d-flex flex-column">
+                    <h3 class="h5 mb-2 text-primary">Browse Products</h3>
+                    <p class="text-muted flex-grow-1">
+                        Discover new items across every vendor on OmniTrade.
+                    </p>
+                    <a asp-controller="Products"
+                       asp-action="Index"
+                       class="btn btn-outline-primary mt-2">
+                        Shop Now
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4 d-flex flex-column">
+                    <h3 class="h5 mb-2 text-success">My Cart</h3>
+                    <p class="text-muted flex-grow-1">
+                        Review the items you've added and check out when ready.
+                    </p>
+                    <a asp-controller="Cart"
+                       asp-action="Index"
+                       class="btn btn-outline-success mt-2">
+                        View Cart
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4 d-flex flex-column">
+                    <h3 class="h5 mb-2 text-dark">My Orders</h3>
+                    <p class="text-muted flex-grow-1">
+                        Track the status of your past and current orders.
+                    </p>
+                    <a asp-controller="Orders"
+                       asp-action="Index"
+                       class="btn btn-outline-dark mt-2">
+                        View Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

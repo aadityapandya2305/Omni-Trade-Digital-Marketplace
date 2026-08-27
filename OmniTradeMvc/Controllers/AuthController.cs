@@ -14,15 +14,21 @@ namespace OmniTradeMvc.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
+
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(
+            LoginViewModel model,
+            string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
+
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -45,7 +51,20 @@ namespace OmniTradeMvc.Controllers
 
                     TempData["SuccessMessage"] = "Login successful.";
 
-                    return RedirectToAction("Index", "Home");
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
+
+                    // Send each role straight to its own dashboard, rather
+                    // than routing everyone through Home/Index.
+                    return result.Role switch
+                    {
+                        "Admin" => RedirectToAction("Dashboard", "Admin"),
+                        "Vendor" => RedirectToAction("Dashboard", "Vendors"),
+                        "Customer" => RedirectToAction("Dashboard", "Customers"),
+                        _ => RedirectToAction("Index", "Home")
+                    };
                 }
 
                 ModelState.AddModelError(string.Empty, "Invalid email or password.");
