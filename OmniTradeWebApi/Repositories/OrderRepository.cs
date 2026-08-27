@@ -14,10 +14,7 @@ namespace OmniTradeWebApi.Repositories
             _context = context;
         }
 
-        public async Task<Order> CreateOrderFromCartAsync(
-            int customerId,
-            string shippingAddress,
-            string paymentMethod)
+        public async Task<OrderDetailsDto> CreateOrderFromCartAsync(int customerId)
         {
             await using var transaction =
                 await _context.Database.BeginTransactionAsync();
@@ -65,9 +62,7 @@ namespace OmniTradeWebApi.Repositories
                     CustomerId = customerId,
                     OrderDate = DateTime.UtcNow,
                     TotalAmount = totalAmount,
-                    Status = "Pending",
-                    ShippingAddress = shippingAddress,
-                    PaymentMethod = paymentMethod
+                    Status = "Pending"
                 };
 
                 await _context.Orders.AddAsync(order);
@@ -95,7 +90,24 @@ namespace OmniTradeWebApi.Repositories
 
                 await transaction.CommitAsync();
 
-                return order;
+                // Build the response from the cart items already loaded in
+                // memory (they still carry Product.Name/Price) rather than
+                // issuing another round trip to the database.
+                return new OrderDetailsDto
+                {
+                    Id = order.Id,
+                    CustomerId = order.CustomerId,
+                    OrderDate = order.OrderDate,
+                    Status = order.Status,
+                    TotalAmount = order.TotalAmount,
+                    Items = cartItems.Select(c => new OrderDetailsItemDto
+                    {
+                        ProductId = c.ProductId,
+                        ProductName = c.Product.Name,
+                        Quantity = c.Quantity,
+                        UnitPrice = c.Product.Price
+                    }).ToList()
+                };
             }
             catch
             {
@@ -104,8 +116,39 @@ namespace OmniTradeWebApi.Repositories
             }
         }
 
-        public async Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(
+        public async Task<OrderDetailsDto?> GetOrderDetailsForCustomerAsync(
+            int orderId,
             int customerId)
+        {
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .FirstOrDefaultAsync(o =>
+                    o.Id == orderId && o.CustomerId == customerId);
+
+            if (order == null)
+            {
+                return null;
+            }
+
+            return new OrderDetailsDto
+            {
+                Id = order.Id,
+                CustomerId = order.CustomerId,
+                OrderDate = order.OrderDate,
+                Status = order.Status,
+                TotalAmount = order.TotalAmount,
+                Items = order.OrderItems.Select(oi => new OrderDetailsItemDto
+                {
+                    ProductId = oi.ProductId,
+                    ProductName = oi.Product.Name,
+                    Quantity = oi.Quantity,
+                    UnitPrice = oi.UnitPrice
+                }).ToList()
+            };
+        }
+
+        public async Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(int customerId)
         {
             return await _context.Orders
                 .Include(o => o.OrderItems)
@@ -114,20 +157,7 @@ namespace OmniTradeWebApi.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Order?> GetCustomerOrderDetailsAsync(
-            int customerId,
-            int orderId)
-        {
-            return await _context.Orders
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                .FirstOrDefaultAsync(o =>
-                    o.Id == orderId &&
-                    o.CustomerId == customerId);
-        }
-
-        public async Task<IEnumerable<OrderItem>> GetOrderItemsByVendorIdAsync(
-            int vendorId)
+        public async Task<IEnumerable<OrderItem>> GetOrderItemsByVendorIdAsync(int vendorId)
         {
             return await _context.OrderItems
                 .Include(o => o.Order)
@@ -136,9 +166,7 @@ namespace OmniTradeWebApi.Repositories
                 .ToListAsync();
         }
 
-        public async Task UpdateOrderStatusAsync(
-            int orderId,
-            string status)
+        public async Task UpdateOrderStatusAsync(int orderId,string status)
         {
             var order = await _context.Orders
                 .FirstOrDefaultAsync(o => o.Id == orderId);
@@ -154,8 +182,7 @@ namespace OmniTradeWebApi.Repositories
                 "Pending",
                 "Processing",
                 "Shipped",
-                "Delivered",
-                "Cancelled"
+                "Delivered"
             };
 
             if (!validStatuses.Contains(status))
@@ -180,80 +207,20 @@ namespace OmniTradeWebApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task CancelOrderAsync(
-            int customerId,
-            int orderId)
-        {
-            await using var transaction =
-                await _context.Database.BeginTransactionAsync();
-
-            try
-            {
-                var order = await _context.Orders
-                    .Include(o => o.OrderItems)
-                        .ThenInclude(oi => oi.Product)
-                    .FirstOrDefaultAsync(o =>
-                        o.Id == orderId &&
-                        o.CustomerId == customerId);
-
-                if (order == null)
-                {
-                    throw new InvalidOperationException(
-                        "Order not found.");
-                }
-
-                if (order.Status != "Pending")
-                {
-                    throw new InvalidOperationException(
-                        $"Order cannot be cancelled because its current status is '{order.Status}'.");
-                }
-
-                foreach (var orderItem in order.OrderItems)
-                {
-                    if (orderItem.Product == null)
-                    {
-                        throw new InvalidOperationException(
-                            "A product associated with this order could not be found.");
-                    }
-
-                    orderItem.Product.StockQuantity +=
-                        orderItem.Quantity;
-                }
-
-                order.Status = "Cancelled";
-
-                await _context.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-        }
-
-        public async Task<bool> VendorHasOrderAsync(
-            int orderId,
-            int vendorId)
+        public async Task<bool> VendorHasOrderAsync(int orderId, int vendorId)
         {
             return await _context.OrderItems
-                .AnyAsync(oi =>
-                    oi.OrderId == orderId &&
-                    oi.VendorId == vendorId);
+                .AnyAsync(oi => oi.OrderId == orderId && oi.VendorId == vendorId);
         }
 
-        public async Task<VendorOrderDetailsDto?> GetVendorOrderDetailsAsync(
-            int orderId,
-            int vendorId)
+        public async Task<VendorOrderDetailsDto?> GetVendorOrderDetailsAsync(int orderId, int vendorId)
         {
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
                 .FirstOrDefaultAsync(o =>
                     o.Id == orderId &&
-                    o.OrderItems.Any(
-                        oi => oi.VendorId == vendorId));
+                    o.OrderItems.Any(oi => oi.VendorId == vendorId));
 
             if (order == null)
             {

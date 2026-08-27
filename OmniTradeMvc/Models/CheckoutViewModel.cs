@@ -16,14 +16,6 @@ namespace OmniTradeMvc.Models
         public string PaymentMethod { get; set; } = string.Empty;
     }
 
-    // Sent to the WebApi to create an order from the customer's cart
-    public class PlaceOrderRequest
-    {
-        public int CustomerId { get; set; }
-        public string ShippingAddress { get; set; } = string.Empty;
-        public string PaymentMethod { get; set; } = string.Empty;
-    }
-
     // Returned by the WebApi after order creation / used for Confirmation + My Orders + Order Details
     public class OrderViewModel
     {
@@ -41,8 +33,8 @@ namespace OmniTradeMvc.Models
     {
         public int ProductId { get; set; }
         public string ProductName { get; set; } = string.Empty;
-        public decimal Price { get; set; }
+        public decimal UnitPrice { get; set; }
         public int Quantity { get; set; }
-        public decimal Total => Price * Quantity;
+        public decimal Total => UnitPrice * Quantity;
     }
 }
