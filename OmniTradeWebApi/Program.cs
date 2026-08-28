@@ -125,13 +125,6 @@ namespace OmniTradeWebApi
                 app.UseSwaggerUI();
             }
 
-            // Skipped in Development: forcing HTTPS redirection here was
-            // silently bouncing local http://localhost:5108 calls back to
-            // https://localhost:7286, whose self-signed dev cert isn't
-            // trusted by .NET's HttpClient (only by the browser/Swagger),
-            // causing every server-to-server call from OmniTradeMvc to
-            // fail with a connection error. Re-enable for real deployments,
-            // where both sides sit behind a properly trusted certificate.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseHttpsRedirection();

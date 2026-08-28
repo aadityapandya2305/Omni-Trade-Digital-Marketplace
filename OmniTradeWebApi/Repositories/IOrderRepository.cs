@@ -9,9 +9,7 @@ namespace OmniTradeWebApi.Repositories
 
         Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(int customerId);
 
-        Task<OrderDetailsDto?> GetOrderDetailsForCustomerAsync(
-            int orderId,
-            int customerId);
+        Task<OrderDetailsDto?> GetOrderDetailsForCustomerAsync(int orderId, int customerId);
 
         Task<IEnumerable<OrderItem>> GetOrderItemsByVendorIdAsync(int vendorId);
 
