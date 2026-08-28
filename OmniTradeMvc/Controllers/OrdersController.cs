@@ -57,8 +57,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // GET: /Orders/Details/5
-        // Shows full details for a single order
         [HttpGet]
         [SessionAuthorize("Customer")]
         public async Task<IActionResult> Details(int id)
@@ -103,8 +101,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // GET: /Orders/Incoming
-        // Shows orders containing products belonging to the logged-in vendor
         [HttpGet]
         [SessionAuthorize("Vendor")]
         public async Task<IActionResult> Incoming()
@@ -135,8 +131,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // GET: /Orders/VendorDetails/5
-        // Shows details of an order for the logged-in vendor
         [HttpGet]
         [SessionAuthorize("Vendor")]
         public async Task<IActionResult> VendorDetails(int id)
@@ -177,7 +171,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // POST: /Orders/UpdateStatus
         [HttpPost]
         [ValidateAntiForgeryToken]
         [SessionAuthorize("Vendor")]

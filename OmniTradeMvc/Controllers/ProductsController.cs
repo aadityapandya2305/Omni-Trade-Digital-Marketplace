@@ -13,7 +13,6 @@ namespace OmniTradeMvc.Controllers
             _httpClientFactory = httpClientFactory;
         }
 
-        // GET: /Products
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -34,7 +33,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // GET: /Products/Search?name=...
         [HttpGet]
         public async Task<IActionResult> Search(string name)
         {
@@ -63,7 +61,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // GET: /Products/Details/1
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {

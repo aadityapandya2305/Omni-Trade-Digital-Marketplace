@@ -15,8 +15,6 @@ namespace OmniTradeMvc.Controllers
             _vendorService = vendorService;
         }
 
-        // GET: /Vendors/Dashboard
-        // Overview of the logged-in vendor's store performance
         [HttpGet]
         public async Task<IActionResult> Dashboard()
         {
@@ -44,15 +42,12 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // GET: /Vendors/Register
-        // Shown to vendors who don't yet have a store profile
         [HttpGet]
         public IActionResult Register()
         {
             return View(new VendorProfileViewModel());
         }
 
-        // POST: /Vendors/Register
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(VendorProfileViewModel model)
@@ -92,8 +87,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // GET: /Vendors/Profile
-        // Edit the logged-in vendor's store profile
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
@@ -120,7 +113,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // POST: /Vendors/Profile
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Profile(VendorProfileViewModel model)
@@ -156,8 +148,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // GET: /Vendors/Products
-        // Lists every product owned by the logged-in vendor
         [HttpGet]
         public async Task<IActionResult> Products()
         {
@@ -176,14 +166,12 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // GET: /Vendors/CreateProduct
         [HttpGet]
         public IActionResult CreateProduct()
         {
             return View(new ProductViewModel());
         }
 
-        // POST: /Vendors/CreateProduct
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateProduct(ProductViewModel model)
@@ -221,7 +209,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // GET: /Vendors/EditProduct/5
         [HttpGet]
         public async Task<IActionResult> EditProduct(int id)
         {
@@ -248,7 +235,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // POST: /Vendors/EditProduct/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditProduct(
@@ -288,7 +274,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // POST: /Vendors/DeleteProduct/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteProduct(int id)
