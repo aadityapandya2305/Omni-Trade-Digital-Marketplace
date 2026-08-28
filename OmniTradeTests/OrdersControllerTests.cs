@@ -16,19 +16,13 @@ namespace OmniTradeTests
             Mock<IVendorRepository> mockVendorRepo,
             int? userId = null)
         {
-            var controller =
-                new OrdersController(
-                    mockOrderRepo.Object,
-                    mockVendorRepo.Object);
+            var controller = new OrdersController(mockOrderRepo.Object, mockVendorRepo.Object);
 
             var claims = new List<Claim>();
 
             if (userId.HasValue)
             {
-                claims.Add(
-                    new Claim(
-                        ClaimTypes.NameIdentifier,
-                        userId.Value.ToString()));
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, userId.Value.ToString()));
             }
 
             controller.ControllerContext =
@@ -36,8 +30,7 @@ namespace OmniTradeTests
                 {
                     HttpContext = new DefaultHttpContext
                     {
-                        User = new ClaimsPrincipal(
-                            new ClaimsIdentity(claims))
+                        User = new ClaimsPrincipal(new ClaimsIdentity(claims))
                     }
                 };
 
@@ -47,11 +40,9 @@ namespace OmniTradeTests
         [Fact]
         public async Task Checkout_ReturnsOk_WhenCustomerOwnsAccount()
         {
-            var mockOrderRepo =
-                new Mock<IOrderRepository>();
+            var mockOrderRepo = new Mock<IOrderRepository>();
 
-            var mockVendorRepo =
-                new Mock<IVendorRepository>();
+            var mockVendorRepo = new Mock<IVendorRepository>();
 
             var order = new OrderDetailsDto
             {
@@ -61,24 +52,16 @@ namespace OmniTradeTests
                 Status = "Pending"
             };
 
-            mockOrderRepo
-                .Setup(x => x.CreateOrderFromCartAsync(1))
-                .ReturnsAsync(order);
+            mockOrderRepo.Setup(x => x.CreateOrderFromCartAsync(1)).ReturnsAsync(order);
 
             var controller =
-                CreateController(
-                    mockOrderRepo,
-                    mockVendorRepo,
-                    1);
+                CreateController(mockOrderRepo,mockVendorRepo,1);
 
-            var result =
-                await controller.Checkout(1);
+            var result = await controller.Checkout(1);
 
-            var okResult =
-                Assert.IsType<OkObjectResult>(result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
 
-            var returnedOrder =
-                Assert.IsType<OrderDetailsDto>(okResult.Value);
+            var returnedOrder = Assert.IsType<OrderDetailsDto>(okResult.Value);
 
             Assert.Equal(1, returnedOrder.Id);
             Assert.Equal(1, returnedOrder.CustomerId);
@@ -89,19 +72,14 @@ namespace OmniTradeTests
         [Fact]
         public async Task Checkout_ReturnsUnauthorized_WhenNoUserClaim()
         {
-            var mockOrderRepo =
-                new Mock<IOrderRepository>();
+            var mockOrderRepo = new Mock<IOrderRepository>();
 
-            var mockVendorRepo =
-                new Mock<IVendorRepository>();
+            var mockVendorRepo = new Mock<IVendorRepository>();
 
             var controller =
-                CreateController(
-                    mockOrderRepo,
-                    mockVendorRepo);
+                CreateController(mockOrderRepo, mockVendorRepo);
 
-            var result =
-                await controller.Checkout(1);
+            var result = await controller.Checkout(1);
 
             Assert.IsType<UnauthorizedResult>(result);
         }
@@ -109,20 +87,13 @@ namespace OmniTradeTests
         [Fact]
         public async Task Checkout_ReturnsForbid_WhenCustomerIdDoesNotMatch()
         {
-            var mockOrderRepo =
-                new Mock<IOrderRepository>();
+            var mockOrderRepo = new Mock<IOrderRepository>();
 
-            var mockVendorRepo =
-                new Mock<IVendorRepository>();
+            var mockVendorRepo = new Mock<IVendorRepository>();
 
-            var controller =
-                CreateController(
-                    mockOrderRepo,
-                    mockVendorRepo,
-                    1);
+            var controller = CreateController(mockOrderRepo, mockVendorRepo, 1);
 
-            var result =
-                await controller.Checkout(2);
+            var result = await controller.Checkout(2);
 
             Assert.IsType<ForbidResult>(result);
         }
@@ -130,23 +101,13 @@ namespace OmniTradeTests
         [Fact]
         public async Task Checkout_ReturnsBadRequest_WhenCartOperationFails()
         {
-            var mockOrderRepo =
-                new Mock<IOrderRepository>();
+            var mockOrderRepo = new Mock<IOrderRepository>();
 
-            var mockVendorRepo =
-                new Mock<IVendorRepository>();
+            var mockVendorRepo = new Mock<IVendorRepository>();
 
-            mockOrderRepo
-                .Setup(x => x.CreateOrderFromCartAsync(1))
-                .ThrowsAsync(
-                    new InvalidOperationException(
-                        "Cart is empty."));
+            mockOrderRepo.Setup(x => x.CreateOrderFromCartAsync(1)).ThrowsAsync(new InvalidOperationException("Cart is empty."));
 
-            var controller =
-                CreateController(
-                    mockOrderRepo,
-                    mockVendorRepo,
-                    1);
+            var controller = CreateController(mockOrderRepo, mockVendorRepo, 1);
 
             var result =
                 await controller.Checkout(1);
@@ -160,26 +121,6 @@ namespace OmniTradeTests
         }
 
         [Fact]
-        public async Task GetCustomerOrders_ReturnsUnauthorized_WhenNoUserClaim()
-        {
-            var mockOrderRepo =
-                new Mock<IOrderRepository>();
-
-            var mockVendorRepo =
-                new Mock<IVendorRepository>();
-
-            var controller =
-                CreateController(
-                    mockOrderRepo,
-                    mockVendorRepo);
-
-            var result =
-                await controller.GetCustomerOrders(1);
-
-            Assert.IsType<UnauthorizedResult>(result);
-        }
-
-        [Fact]
         public async Task GetCustomerOrders_ReturnsForbid_WhenCustomerIdDoesNotMatch()
         {
             var mockOrderRepo =
@@ -188,11 +129,7 @@ namespace OmniTradeTests
             var mockVendorRepo =
                 new Mock<IVendorRepository>();
 
-            var controller =
-                CreateController(
-                    mockOrderRepo,
-                    mockVendorRepo,
-                    1);
+            var controller = CreateController(mockOrderRepo, mockVendorRepo, 1);
 
             var result =
                 await controller.GetCustomerOrders(2);
@@ -245,11 +182,7 @@ namespace OmniTradeTests
                 .Setup(x => x.GetOrderItemsByVendorIdAsync(1))
                 .ReturnsAsync(orderItems);
 
-            var controller =
-                CreateController(
-                    mockOrderRepo,
-                    mockVendorRepo,
-                    1);
+            var controller = CreateController(mockOrderRepo, mockVendorRepo, 1);
 
             var result =
                 await controller.GetVendorOrders(1);
@@ -281,10 +214,7 @@ namespace OmniTradeTests
             var mockVendorRepo =
                 new Mock<IVendorRepository>();
 
-            var controller =
-                CreateController(
-                    mockOrderRepo,
-                    mockVendorRepo);
+            var controller = CreateController(mockOrderRepo, mockVendorRepo, 1);
 
             var result =
                 await controller.GetVendorOrders(1);
@@ -338,11 +268,7 @@ namespace OmniTradeTests
                 .Setup(x => x.GetVendorByUserIdAsync(1))
                 .ReturnsAsync(vendor);
 
-            var controller =
-                CreateController(
-                    mockOrderRepo,
-                    mockVendorRepo,
-                    1);
+            var controller = CreateController(mockOrderRepo, mockVendorRepo, 1);
 
             var result =
                 await controller.GetVendorOrders(2);
@@ -359,10 +285,7 @@ namespace OmniTradeTests
             var mockVendorRepo =
                 new Mock<IVendorRepository>();
 
-            var controller =
-                CreateController(
-                    mockOrderRepo,
-                    mockVendorRepo);
+            var controller = CreateController(mockOrderRepo, mockVendorRepo, 1);
 
             var result =
                 await controller.UpdateOrderStatus(

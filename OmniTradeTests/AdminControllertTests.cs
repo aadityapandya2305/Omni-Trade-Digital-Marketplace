@@ -20,30 +20,19 @@ namespace OmniTradeTests
                 TotalOrders = 1
             };
 
-            mockRepo
-                .Setup(x => x.GetPlatformAnalyticsAsync())
-                .ReturnsAsync(analytics);
+            mockRepo.Setup(x => x.GetPlatformAnalyticsAsync()).ReturnsAsync(analytics);
 
-            var controller =
-                new AdminController(mockRepo.Object);
+            var controller = new AdminController(mockRepo.Object);
 
-            var result =
-                await controller.GetPlatformAnalytics();
+            var result = await controller.GetPlatformAnalytics();
 
-            var okResult =
-                Assert.IsType<OkObjectResult>(result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
 
-            var returnedAnalytics =
-                Assert.IsType<PlatformAnalyticsDto>(
-                    okResult.Value);
+            var returnedAnalytics = Assert.IsType<PlatformAnalyticsDto>(okResult.Value);
 
             Assert.Equal(17495, returnedAnalytics.GMV);
-            Assert.Equal(
-                1,
-                returnedAnalytics.TotalActiveVendors);
-            Assert.Equal(
-                1,
-                returnedAnalytics.TotalOrders);
+            Assert.Equal(1, returnedAnalytics.TotalActiveVendors);
+            Assert.Equal(1, returnedAnalytics.TotalOrders);
         }
 
         [Fact]
@@ -76,30 +65,19 @@ namespace OmniTradeTests
                 }
             };
 
-            mockRepo
-                .Setup(x => x.GetAllUsersAsync())
-                .ReturnsAsync(users);
+            mockRepo.Setup(x => x.GetAllUsersAsync()).ReturnsAsync(users);
 
-            var controller =
-                new AdminController(mockRepo.Object);
+            var controller = new AdminController(mockRepo.Object);
 
-            var result =
-                await controller.GetAllUsers();
+            var result = await controller.GetAllUsers();
 
-            var okResult =
-                Assert.IsType<OkObjectResult>(result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
 
-            var returnedUsers =
-                Assert.IsAssignableFrom<
-                    IEnumerable<UserManagementDto>>(
-                    okResult.Value);
+            var returnedUsers = Assert.IsAssignableFrom<IEnumerable<UserManagementDto>>(okResult.Value);
 
             Assert.Equal(3, returnedUsers.Count());
 
-            Assert.Contains(
-                returnedUsers,
-                u => u.Username == "admin"
-                    && u.Role == "Admin");
+            Assert.Contains(returnedUsers,u => u.Username == "admin" && u.Role == "Admin");
         }
     }
 }
