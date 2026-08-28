@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OmniTradeMvc.Models
 {
-    // Bound to the Checkout Index view (cart summary + shipping/payment form)
     public class CheckoutViewModel
     {
         public CartViewModel Cart { get; set; } = new();

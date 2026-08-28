@@ -10,8 +10,7 @@
 
         public decimal TotalAmount { get; set; }
 
-        public IEnumerable<VendorOrderItemDetailsViewModel> Items { get; set; }
-            = new List<VendorOrderItemDetailsViewModel>();
+        public IEnumerable<VendorOrderItemDetailsViewModel> Items { get; set; } = new List<VendorOrderItemDetailsViewModel>();
     }
 
     public class VendorOrderItemDetailsViewModel

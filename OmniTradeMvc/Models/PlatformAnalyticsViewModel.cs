@@ -2,14 +2,12 @@
 {
     public class PlatformAnalyticsViewModel
     {
-        // Original stats
         public decimal GMV { get; set; }
 
         public int TotalActiveVendors { get; set; }
 
         public int TotalOrders { get; set; }
 
-        // Quick-win stats
         public int TotalUsers { get; set; }
 
         public int TotalCustomers { get; set; }
@@ -28,7 +26,6 @@
 
         public int NewUsersLast7Days { get; set; }
 
-        // Grouped breakdowns
         public List<StatusCountViewModel> OrdersByStatus { get; set; } = new();
 
         public List<CategoryRevenueViewModel> RevenueByCategory { get; set; } = new();
