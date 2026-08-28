@@ -7,7 +7,7 @@ namespace OmniTradeWebApi.Repositories
     {
         Task<OrderDetailsDto> CreateOrderFromCartAsync(int customerId);
 
-        Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(int customerId);
+        Task<IEnumerable<OrderDetailsDto>> GetOrdersByCustomerIdAsync(int customerId);
 
         Task<OrderDetailsDto?> GetOrderDetailsForCustomerAsync(int orderId, int customerId);
 

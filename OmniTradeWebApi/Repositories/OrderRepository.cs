@@ -99,6 +99,8 @@ namespace OmniTradeWebApi.Repositories
                     CustomerId = order.CustomerId,
                     OrderDate = order.OrderDate,
                     Status = order.Status,
+                    ShippingAddress = order.ShippingAddress ?? string.Empty,
+                    PaymentMethod = order.PaymentMethod ?? string.Empty,
                     TotalAmount = order.TotalAmount,
                     Items = cartItems.Select(c => new OrderDetailsItemDto
                     {
@@ -137,6 +139,8 @@ namespace OmniTradeWebApi.Repositories
                 CustomerId = order.CustomerId,
                 OrderDate = order.OrderDate,
                 Status = order.Status,
+                ShippingAddress = order.ShippingAddress ?? string.Empty,
+                PaymentMethod = order.PaymentMethod ?? string.Empty,
                 TotalAmount = order.TotalAmount,
                 Items = order.OrderItems.Select(oi => new OrderDetailsItemDto
                 {
@@ -148,13 +152,32 @@ namespace OmniTradeWebApi.Repositories
             };
         }
 
-        public async Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(int customerId)
+        public async Task<IEnumerable<OrderDetailsDto>> GetOrdersByCustomerIdAsync(int customerId)
         {
-            return await _context.Orders
+            var orders = await _context.Orders
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
                 .Where(o => o.CustomerId == customerId)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
+
+            return orders.Select(order => new OrderDetailsDto
+            {
+                Id = order.Id,
+                CustomerId = order.CustomerId,
+                OrderDate = order.OrderDate,
+                Status = order.Status,
+                ShippingAddress = order.ShippingAddress ?? string.Empty,
+                PaymentMethod = order.PaymentMethod ?? string.Empty,
+                TotalAmount = order.TotalAmount,
+                Items = order.OrderItems.Select(oi => new OrderDetailsItemDto
+                {
+                    ProductId = oi.ProductId,
+                    ProductName = oi.Product.Name,
+                    Quantity = oi.Quantity,
+                    UnitPrice = oi.UnitPrice
+                }).ToList()
+            });
         }
 
         public async Task<IEnumerable<OrderItem>> GetOrderItemsByVendorIdAsync(int vendorId)

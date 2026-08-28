@@ -19,24 +19,29 @@ namespace OmniTradeWebApi.Controllers
         }
 
         [HttpGet("{customerId}")]
-        public async Task<ActionResult<IEnumerable<CartItem>>> GetCart(int customerId)
+        public async Task<ActionResult<IEnumerable<CartItemDto>>> GetCart(int customerId)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
-            {
                 return Unauthorized();
-            }
 
             if (userId != customerId)
-            {
                 return Forbid();
-            }
 
-            var cart = await _cartRepository
-                .GetCartByCustomerIdAsync(customerId);
+            var cart = await _cartRepository.GetCartByCustomerIdAsync(customerId);
 
-            return Ok(cart);
+            var result = cart.Select(c => new CartItemDto
+            {
+                Id = c.Id,
+                CustomerId = c.CustomerId,
+                ProductId = c.ProductId,
+                ProductName = c.Product.Name,
+                Price = c.Product.Price,
+                Quantity = c.Quantity
+            });
+
+            return Ok(result);
         }
 
         [HttpPost]

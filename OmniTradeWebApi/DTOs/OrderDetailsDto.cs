@@ -10,6 +10,10 @@
 
         public string Status { get; set; } = null!;
 
+        public string ShippingAddress { get; set; } = string.Empty;
+
+        public string PaymentMethod { get; set; } = string.Empty;
+
         public decimal TotalAmount { get; set; }
 
         public IEnumerable<OrderDetailsItemDto> Items { get; set; }

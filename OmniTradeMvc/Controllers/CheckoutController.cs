@@ -16,9 +16,6 @@ namespace OmniTradeMvc.Controllers
             _httpClientFactory = httpClientFactory;
         }
 
-        // The WebApi requires a Bearer token on Cart/Orders endpoints
-        // ([Authorize(Roles = "Customer")]); this was previously never
-        // attached, so every call here would have returned 401.
         private HttpClient GetAuthorizedClient()
         {
             var client = _httpClientFactory.CreateClient("OmniTradeApi");
@@ -34,8 +31,6 @@ namespace OmniTradeMvc.Controllers
             return client;
         }
 
-        // GET: /Checkout
-        // Shows the cart summary before placing the order
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -58,7 +53,9 @@ namespace OmniTradeMvc.Controllers
                     return RedirectToAction("Index", "Products");
                 }
 
-                var cart = await response.Content.ReadFromJsonAsync<CartViewModel>();
+                var items = await response.Content.ReadFromJsonAsync<List<CartItemViewModel>>() ?? new List<CartItemViewModel>();
+
+                var cart = new CartViewModel { Items = items };
 
                 if (cart == null || cart.Items.Count == 0)
                 {
@@ -80,14 +77,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // POST: /Checkout/PlaceOrder
-        // Submits the order using the shipping/payment details entered.
-        //
-        // NOTE: the WebApi's Order model currently has no ShippingAddress
-        // or PaymentMethod columns, so those two values are captured here
-        // for UX purposes but are not yet persisted server-side. That
-        // needs a schema change (Order table + migration) as a follow-up;
-        // it's out of scope for this connectivity fix.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
@@ -103,13 +92,11 @@ namespace OmniTradeMvc.Controllers
 
             if (!ModelState.IsValid)
             {
-                // Re-fetch cart so the view isn't empty on validation failure
                 var cartResponse = await client.GetAsync($"api/Cart/{customerId.Value}");
 
                 if (cartResponse.IsSuccessStatusCode)
                 {
-                    model.Cart = await cartResponse.Content.ReadFromJsonAsync<CartViewModel>()
-                                 ?? new CartViewModel();
+                    model.Cart = await cartResponse.Content.ReadFromJsonAsync<CartViewModel>()?? new CartViewModel();
                 }
 
                 return View("Index", model);
@@ -117,12 +104,7 @@ namespace OmniTradeMvc.Controllers
 
             try
             {
-                // The real WebApi contract: POST api/Orders/checkout/{customerId}
-                // with no body - it converts the customer's current cart into
-                // an order server-side.
-                var response = await client.PostAsync(
-                    $"api/Orders/checkout/{customerId.Value}",
-                    null);
+                var response = await client.PostAsync($"api/Orders/checkout/{customerId.Value}",null);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -132,11 +114,8 @@ namespace OmniTradeMvc.Controllers
                 }
 
                 var errorBody = await response.Content.ReadAsStringAsync();
-                ModelState.AddModelError(
-                    string.Empty,
-                    string.IsNullOrWhiteSpace(errorBody)
-                        ? "Unable to place your order. Please try again."
-                        : errorBody);
+                ModelState.AddModelError(string.Empty,
+                    string.IsNullOrWhiteSpace(errorBody) ? "Unable to place your order. Please try again." : errorBody);
             }
             catch (HttpRequestException)
             {
@@ -146,14 +125,12 @@ namespace OmniTradeMvc.Controllers
             var retryCartResponse = await client.GetAsync($"api/Cart/{customerId.Value}");
             if (retryCartResponse.IsSuccessStatusCode)
             {
-                model.Cart = await retryCartResponse.Content.ReadFromJsonAsync<CartViewModel>()
-                             ?? new CartViewModel();
+                model.Cart = await retryCartResponse.Content.ReadFromJsonAsync<CartViewModel>() ?? new CartViewModel();
             }
 
             return View("Index", model);
         }
 
-        // GET: /Checkout/Confirmation/5
         [HttpGet]
         public async Task<IActionResult> Confirmation(int id)
         {
@@ -161,7 +138,6 @@ namespace OmniTradeMvc.Controllers
 
             try
             {
-                // GET api/Orders/{id} - restricted to the order's own customer
                 var response = await client.GetAsync($"api/Orders/{id}");
 
                 if (!response.IsSuccessStatusCode)

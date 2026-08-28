@@ -160,64 +160,6 @@ namespace OmniTradeTests
         }
 
         [Fact]
-        public async Task GetCustomerOrders_ReturnsOk_WhenCustomerOwnsAccount()
-        {
-            var mockOrderRepo =
-                new Mock<IOrderRepository>();
-
-            var mockVendorRepo =
-                new Mock<IVendorRepository>();
-
-            var orders = new List<Order>
-    {
-        new Order
-        {
-            Id = 1,
-            CustomerId = 1,
-            TotalAmount = 100,
-            Status = "Pending"
-        },
-        new Order
-        {
-            Id = 2,
-            CustomerId = 1,
-            TotalAmount = 200,
-            Status = "Delivered"
-        }
-    };
-
-            mockOrderRepo
-                .Setup(x => x.GetOrdersByCustomerIdAsync(1))
-                .ReturnsAsync(orders);
-
-            var controller =
-                CreateController(
-                    mockOrderRepo,
-                    mockVendorRepo,
-                    1);
-
-            var result =
-                await controller.GetCustomerOrders(1);
-
-            var okResult =
-                Assert.IsType<OkObjectResult>(result);
-
-            var returnedOrders =
-                Assert.IsAssignableFrom<IEnumerable<Order>>(
-                    okResult.Value);
-
-            Assert.Equal(2, returnedOrders.Count());
-
-            Assert.Contains(
-                returnedOrders,
-                o => o.Id == 1);
-
-            Assert.Contains(
-                returnedOrders,
-                o => o.Id == 2);
-        }
-
-        [Fact]
         public async Task GetCustomerOrders_ReturnsUnauthorized_WhenNoUserClaim()
         {
             var mockOrderRepo =
@@ -607,7 +549,7 @@ namespace OmniTradeTests
         }
 
         [Fact]
-        public async Task GetOrderById_ReturnsOk_WhenCustomerOwnsOrder()
+        public async Task GetCustomerOrders_ReturnsOk_WhenCustomerOwnsAccount()
         {
             var mockOrderRepo =
                 new Mock<IOrderRepository>();
@@ -615,17 +557,27 @@ namespace OmniTradeTests
             var mockVendorRepo =
                 new Mock<IVendorRepository>();
 
-            var order = new OrderDetailsDto
-            {
-                Id = 5,
-                CustomerId = 1,
-                TotalAmount = 250,
-                Status = "Pending"
-            };
+            var orders = new List<OrderDetailsDto>
+    {
+        new OrderDetailsDto
+        {
+            Id = 1,
+            CustomerId = 1,
+            TotalAmount = 100,
+            Status = "Pending"
+        },
+        new OrderDetailsDto
+        {
+            Id = 2,
+            CustomerId = 1,
+            TotalAmount = 200,
+            Status = "Delivered"
+        }
+    };
 
             mockOrderRepo
-                .Setup(x => x.GetOrderDetailsForCustomerAsync(5, 1))
-                .ReturnsAsync(order);
+                .Setup(x => x.GetOrdersByCustomerIdAsync(1))
+                .ReturnsAsync(orders);
 
             var controller =
                 CreateController(
@@ -634,16 +586,24 @@ namespace OmniTradeTests
                     1);
 
             var result =
-                await controller.GetOrderById(5);
+                await controller.GetCustomerOrders(1);
 
             var okResult =
                 Assert.IsType<OkObjectResult>(result);
 
-            var returnedOrder =
-                Assert.IsType<OrderDetailsDto>(okResult.Value);
+            var returnedOrders =
+                Assert.IsAssignableFrom<IEnumerable<OrderDetailsDto>>(
+                    okResult.Value);
 
-            Assert.Equal(5, returnedOrder.Id);
-            Assert.Equal(1, returnedOrder.CustomerId);
+            Assert.Equal(2, returnedOrders.Count());
+
+            Assert.Contains(
+                returnedOrders,
+                o => o.Id == 1);
+
+            Assert.Contains(
+                returnedOrders,
+                o => o.Id == 2);
         }
 
         [Fact]

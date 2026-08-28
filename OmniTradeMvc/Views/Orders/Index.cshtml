@@ -33,7 +33,7 @@ else
             {
                 <tr>
                     <td>#@order.Id</td>
-                    <td>@order.OrderDate.ToString("dd MMM yyyy")</td>
+                    <td>@(order.OrderDate?.ToString("dd MMM yyyy") ?? "N/A")</td>
                     <td><span class="badge bg-info">@order.Status</span></td>
                     <td>@order.TotalAmount.ToString("C")</td>
                     <td>

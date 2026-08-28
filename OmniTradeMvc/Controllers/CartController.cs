@@ -16,7 +16,6 @@ namespace OmniTradeMvc.Controllers
             _httpClientFactory = httpClientFactory;
         }
 
-        // Display the logged-in user's cart
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -35,8 +34,7 @@ namespace OmniTradeMvc.Controllers
                 client.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", token);
 
-                var cartItems = await client.GetFromJsonAsync<List<CartApiItem>>(
-                    $"api/Cart/{customerId.Value}");
+                var cartItems = await client.GetFromJsonAsync<List<CartApiItem>>($"api/Cart/{customerId.Value}");
 
                 var cart = new CartViewModel();
 
@@ -47,8 +45,8 @@ namespace OmniTradeMvc.Controllers
                         Id = item.Id,
                         CustomerId = item.CustomerId,
                         ProductId = item.ProductId,
-                        ProductName = item.Product?.Name ?? "Unknown Product",
-                        Price = item.Product?.Price ?? 0,
+                        ProductName = item.ProductName,
+                        Price = item.Price,
                         Quantity = item.Quantity
                     }).ToList();
                 }
@@ -64,7 +62,6 @@ namespace OmniTradeMvc.Controllers
             }
         }
 
-        // Add product to the logged-in user's cart
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(int productId, int quantity = 1)
@@ -86,8 +83,7 @@ namespace OmniTradeMvc.Controllers
             {
                 var client = _httpClientFactory.CreateClient("OmniTradeApi");
 
-                client.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", token);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
                 var request = new
                 {
@@ -96,41 +92,29 @@ namespace OmniTradeMvc.Controllers
                     Quantity = quantity
                 };
 
-                var response = await client.PostAsJsonAsync(
-                    "api/Cart",
-                    request);
+                var response = await client.PostAsJsonAsync("api/Cart", request);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorMessage = await response.Content.ReadAsStringAsync();
 
-                    TempData["CartError"] =
-                        $"Unable to add the product to your cart. API returned {(int)response.StatusCode}.";
+                    TempData["CartError"] = $"Unable to add the product to your cart. API returned {(int)response.StatusCode}.";
 
-                    return RedirectToAction(
-                        "Details",
-                        "Products",
-                        new { id = productId });
+                    return RedirectToAction("Details", "Products", new { id = productId });
                 }
 
-                TempData["CartMessage"] =
-                    "Product added to your cart.";
+                TempData["CartMessage"] = "Product added to your cart.";
 
                 return RedirectToAction(nameof(Index));
             }
             catch (HttpRequestException)
             {
-                TempData["CartError"] =
-                    "Unable to connect to the cart service.";
+                TempData["CartError"] = "Unable to connect to the cart service.";
 
-                return RedirectToAction(
-                    "Details",
-                    "Products",
-                    new { id = productId });
+                return RedirectToAction("Details", "Products", new { id = productId });
             }
         }
 
-        // Update cart item quantity
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(int id, int quantity)
@@ -145,8 +129,7 @@ namespace OmniTradeMvc.Controllers
 
             if (quantity < 1)
             {
-                TempData["CartError"] =
-                    "Quantity must be at least 1.";
+                TempData["CartError"] = "Quantity must be at least 1.";
 
                 return RedirectToAction(nameof(Index));
             }
@@ -158,34 +141,27 @@ namespace OmniTradeMvc.Controllers
                 client.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", token);
 
-                // API expects a plain integer in the request body.
-                var response = await client.PutAsJsonAsync(
-                    $"api/Cart/{id}",
-                    quantity);
+                var response = await client.PutAsJsonAsync($"api/Cart/{id}", quantity);
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    TempData["CartError"] =
-                        "Unable to update the cart item.";
+                    TempData["CartError"] = "Unable to update the cart item.";
                 }
                 else
                 {
-                    TempData["CartMessage"] =
-                        "Cart quantity updated successfully.";
+                    TempData["CartMessage"] = "Cart quantity updated successfully.";
                 }
 
                 return RedirectToAction(nameof(Index));
             }
             catch (HttpRequestException)
             {
-                TempData["CartError"] =
-                    "Unable to connect to the cart service.";
+                TempData["CartError"] = "Unable to connect to the cart service.";
 
                 return RedirectToAction(nameof(Index));
             }
         }
 
-        // Remove item from cart
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Remove(int id)
@@ -202,29 +178,24 @@ namespace OmniTradeMvc.Controllers
             {
                 var client = _httpClientFactory.CreateClient("OmniTradeApi");
 
-                client.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", token);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                var response = await client.DeleteAsync(
-                    $"api/Cart/{id}");
+                var response = await client.DeleteAsync($"api/Cart/{id}");
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    TempData["CartError"] =
-                        "Unable to remove the item from your cart.";
+                    TempData["CartError"] = "Unable to remove the item from your cart.";
                 }
                 else
                 {
-                    TempData["CartMessage"] =
-                        "Item removed from your cart.";
+                    TempData["CartMessage"] = "Item removed from your cart.";
                 }
 
                 return RedirectToAction(nameof(Index));
             }
             catch (HttpRequestException)
             {
-                TempData["CartError"] =
-                    "Unable to connect to the cart service.";
+                TempData["CartError"] = "Unable to connect to the cart service.";
 
                 return RedirectToAction(nameof(Index));
             }
@@ -238,16 +209,11 @@ namespace OmniTradeMvc.Controllers
 
             public int ProductId { get; set; }
 
-            public int Quantity { get; set; }
-
-            public CartApiProduct? Product { get; set; }
-        }
-
-        private class CartApiProduct
-        {
-            public string? Name { get; set; }
+            public string ProductName { get; set; } = string.Empty;
 
             public decimal Price { get; set; }
+
+            public int Quantity { get; set; }
         }
     }
 }

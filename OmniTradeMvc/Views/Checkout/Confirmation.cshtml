@@ -24,7 +24,7 @@
             </tr>
             <tr>
                 <th>Order Date</th>
-                <td>@Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</td>
+                <td>@(Model.OrderDate?.ToString("dd MMM yyyy, hh:mm tt") ?? "N/A")</td>
             </tr>
             <tr>
                 <th>Status</th>

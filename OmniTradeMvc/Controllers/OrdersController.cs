@@ -3,6 +3,7 @@ using OmniTradeMvc.Filters;
 using OmniTradeMvc.Models;
 using System.Net.Http.Json;
 using OmniTradeMvc.Services;
+using System.Net.Http.Headers;
 
 namespace OmniTradeMvc.Controllers
 {
@@ -17,24 +18,25 @@ namespace OmniTradeMvc.Controllers
             _orderService = orderService;
         }
 
-        // GET: /Orders
-        // Shows the list of orders placed by the current customer ("My Orders")
         [HttpGet]
         [SessionAuthorize("Customer")]
         public async Task<IActionResult> Index()
         {
             var customerId = HttpContext.Session.GetInt32("UserId");
+            var token = HttpContext.Session.GetString("Token");
 
-            if (customerId == null)
+            if (customerId == null || string.IsNullOrEmpty(token))
             {
                 return RedirectToAction("Login", "Auth");
             }
 
             var client = _httpClientFactory.CreateClient("OmniTradeApi");
 
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
             try
             {
-                // Assumes WebApi exposes: GET api/Orders/customer/{customerId}
                 var response = await client.GetAsync($"api/Orders/customer/{customerId.Value}");
 
                 if (!response.IsSuccessStatusCode)
@@ -61,7 +63,17 @@ namespace OmniTradeMvc.Controllers
         [SessionAuthorize("Customer")]
         public async Task<IActionResult> Details(int id)
         {
+            var token = HttpContext.Session.GetString("Token");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
             var client = _httpClientFactory.CreateClient("OmniTradeApi");
+
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
 
             try
             {

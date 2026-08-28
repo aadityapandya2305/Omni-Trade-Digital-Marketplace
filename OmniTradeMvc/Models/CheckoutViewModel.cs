@@ -14,27 +14,5 @@ namespace OmniTradeMvc.Models
         [Required(ErrorMessage = "Please select a payment method.")]
         [Display(Name = "Payment Method")]
         public string PaymentMethod { get; set; } = string.Empty;
-    }
-
-    // Returned by the WebApi after order creation / used for Confirmation + My Orders + Order Details
-    public class OrderViewModel
-    {
-        public int Id { get; set; }
-        public int CustomerId { get; set; }
-        public DateTime OrderDate { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public string ShippingAddress { get; set; } = string.Empty;
-        public string PaymentMethod { get; set; } = string.Empty;
-        public decimal TotalAmount { get; set; }
-        public List<OrderItemViewModel> Items { get; set; } = new();
-    }
-
-    public class OrderItemViewModel
-    {
-        public int ProductId { get; set; }
-        public string ProductName { get; set; } = string.Empty;
-        public decimal UnitPrice { get; set; }
-        public int Quantity { get; set; }
-        public decimal Total => UnitPrice * Quantity;
-    }
+    } 
 }

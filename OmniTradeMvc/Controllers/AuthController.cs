@@ -23,9 +23,7 @@ namespace OmniTradeMvc.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(
-            LoginViewModel model,
-            string? returnUrl = null)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
 
@@ -41,8 +39,7 @@ namespace OmniTradeMvc.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content
-                        .ReadFromJsonAsync<AuthResponseViewModel>();
+                    var result = await response.Content.ReadFromJsonAsync<AuthResponseViewModel>();
 
                     HttpContext.Session.SetString("Username", result!.Username);
                     HttpContext.Session.SetString("Token", result.Token);
@@ -56,8 +53,6 @@ namespace OmniTradeMvc.Controllers
                         return Redirect(returnUrl);
                     }
 
-                    // Send each role straight to its own dashboard, rather
-                    // than routing everyone through Home/Index.
                     return result.Role switch
                     {
                         "Admin" => RedirectToAction("Dashboard", "Admin"),
@@ -101,20 +96,15 @@ namespace OmniTradeMvc.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    TempData["SuccessMessage"] =
-                        "Registration successful. Please log in.";
+                    TempData["SuccessMessage"] = "Registration successful. Please log in.";
                     return RedirectToAction(nameof(Login));
                 }
 
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Registration failed. The email or username may already be in use.");
+                ModelState.AddModelError(string.Empty, "Registration failed. The email or username may already be in use.");
             }
             catch (HttpRequestException)
             {
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Unable to connect to the authentication service.");
+                ModelState.AddModelError(string.Empty, "Unable to connect to the authentication service.");
             }
 
             return View(model);
