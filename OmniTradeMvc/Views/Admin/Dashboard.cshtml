@@ -7,52 +7,270 @@
 <div class="container mt-4">
     <h1 class="mb-4">Admin Dashboard</h1>
 
+    <!-- Top-line stats -->
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Gross Merchandise Value</h6>
+                    <h3 class="card-text">₹@Model.GMV.ToString("N2")</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Total Orders</h6>
+                    <h3 class="card-text">@Model.TotalOrders</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Average Order Value</h6>
+                    <h3 class="card-text">₹@Model.AverageOrderValue.ToString("N2")</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">New Users (7 days)</h6>
+                    <h3 class="card-text">@Model.NewUsersLast7Days</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users / vendors / products health -->
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Total Users</h6>
+                    <h3 class="card-text">@Model.TotalUsers</h3>
+                    <small class="text-muted">
+                        @Model.TotalCustomers customers &middot;
+                        @Model.TotalVendorUsers vendors &middot;
+                        @Model.TotalAdmins admins
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm @(Model.PendingVendorApprovals > 0 ? "border-warning" : "")">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Pending Vendor Approvals</h6>
+                    <h3 class="card-text">
+                        @Model.PendingVendorApprovals
+                        @if (Model.PendingVendorApprovals > 0)
+                        {
+                            <span class="badge bg-warning text-dark align-middle">Action needed</span>
+                        }
+                    </h3>
+                    <a asp-controller="Admin" asp-action="Vendors" class="small">Review vendors &rarr;</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Active Vendors</h6>
+                    <h3 class="card-text">@Model.TotalActiveVendors</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm @(Model.OutOfStockProducts > 0 ? "border-danger" : "")">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Total Products</h6>
+                    <h3 class="card-text">@Model.TotalProducts</h3>
+                    <small class="@(Model.OutOfStockProducts > 0 ? "text-danger" : "text-muted")">
+                        @Model.OutOfStockProducts out of stock
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row mt-2">
+        <div class="col-md-8 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Revenue Trend (last 30 days)</h6>
+                    @if (Model.RevenueTrend.Any())
+                    {
+                        <canvas id="revenueTrendChart" height="90"></canvas>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No orders in the last 30 days.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Orders by Status</h6>
+                    @if (Model.OrdersByStatus.Any())
+                    {
+                        <canvas id="ordersByStatusChart" height="140"></canvas>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No orders yet.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboards -->
     <div class="row">
         <div class="col-md-4 mb-3">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Gross Merchandise Value</h5>
-                    <h2 class="card-text">
-                        ₹@Model.GMV.ToString("N2")
-                    </h2>
+                    <h6 class="card-title text-muted">Top Vendors by Revenue</h6>
+                    @if (Model.TopVendors.Any())
+                    {
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                @foreach (var vendor in Model.TopVendors)
+                                {
+                                    <tr>
+                                        <td>@vendor.StoreName</td>
+                                        <td class="text-end">₹@vendor.Revenue.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No sales yet.</p>
+                    }
                 </div>
             </div>
         </div>
 
         <div class="col-md-4 mb-3">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Active Vendors</h5>
-                    <h2 class="card-text">
-                        @Model.TotalActiveVendors
-                    </h2>
+                    <h6 class="card-title text-muted">Top Selling Products</h6>
+                    @if (Model.TopProducts.Any())
+                    {
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                @foreach (var product in Model.TopProducts)
+                                {
+                                    <tr>
+                                        <td>@product.ProductName</td>
+                                        <td class="text-end">@product.UnitsSold sold</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No sales yet.</p>
+                    }
                 </div>
             </div>
         </div>
 
         <div class="col-md-4 mb-3">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Total Orders</h5>
-                    <h2 class="card-text">
-                        @Model.TotalOrders
-                    </h2>
+                    <h6 class="card-title text-muted">Revenue by Category</h6>
+                    @if (Model.RevenueByCategory.Any())
+                    {
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                @foreach (var category in Model.RevenueByCategory)
+                                {
+                                    <tr>
+                                        <td>@category.Category</td>
+                                        <td class="text-end">₹@category.Revenue.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No sales yet.</p>
+                    }
                 </div>
             </div>
         </div>
     </div>
 
     <div class="mt-4">
-        <a asp-controller="Admin"
-           asp-action="Users"
-           class="btn btn-primary me-2">
+        <a asp-controller="Admin" asp-action="Users" class="btn btn-primary me-2">
             Manage Users
         </a>
 
-        <a asp-controller="Admin"
-           asp-action="Vendors"
-           class="btn btn-secondary">
+        <a asp-controller="Admin" asp-action="Vendors" class="btn btn-secondary">
             Manage Vendors
         </a>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+    <script>
+        @if (Model.RevenueTrend.Any())
+        {
+                <text>
+                    new Chart(document.getElementById('revenueTrendChart'), {
+                        type: 'line',
+                        data: {
+                            labels: [@Html.Raw(string.Join(",", Model.RevenueTrend.Select(d => $"'{d.Date:MMM d}'")))],
+                            datasets: [{
+                                label: 'Revenue (₹)',
+                                data: [@string.Join(",", Model.RevenueTrend.Select(d => d.Revenue.ToString("F2")))],
+                                borderColor: '#0d6efd',
+                                backgroundColor: 'rgba(13,110,253,0.1)',
+                                fill: true,
+                                tension: 0.3
+                            }]
+                        },
+                        options: {
+                            plugins: { legend: { display: false } },
+                            scales: { y: { beginAtZero: true } }
+                        }
+                    });
+                </text>
+        }
+
+        @if (Model.OrdersByStatus.Any())
+        {
+                <text>
+                    new Chart(document.getElementById('ordersByStatusChart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: [@Html.Raw(string.Join(",", Model.OrdersByStatus.Select(s => $"'{s.Status}'")))],
+                            datasets: [{
+                                data: [@string.Join(",", Model.OrdersByStatus.Select(s => s.Count))],
+                                backgroundColor: ['#0d6efd', '#ffc107', '#198754', '#dc3545', '#6c757d']
+                            }]
+                        },
+                        options: {
+                            plugins: { legend: { position: 'bottom' } }
+                        }
+                    });
+                </text>
+        }
+    </script>
+}

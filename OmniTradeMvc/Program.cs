@@ -13,7 +13,7 @@ namespace OmniTradeMvc
 
             builder.Services.AddHttpClient("OmniTradeApi", client =>
             {
-                client.BaseAddress = new Uri("https://localhost:44315/");
+                client.BaseAddress = new Uri("http://localhost:5108/");
             });
 
             builder.Services.AddHttpContextAccessor();

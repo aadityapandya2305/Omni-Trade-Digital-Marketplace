@@ -16,7 +16,6 @@ namespace OmniTradeWebApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.WebHost.UseUrls("https://localhost:7286");
 
             // Add services to the container.
 
@@ -52,7 +51,7 @@ namespace OmniTradeWebApi
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-            builder.Services.AddScoped<ICartRepository,CartRepository>();
+            builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 
             builder.Services.AddAuthentication(
@@ -126,7 +125,17 @@ namespace OmniTradeWebApi
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            // Skipped in Development: forcing HTTPS redirection here was
+            // silently bouncing local http://localhost:5108 calls back to
+            // https://localhost:7286, whose self-signed dev cert isn't
+            // trusted by .NET's HttpClient (only by the browser/Swagger),
+            // causing every server-to-server call from OmniTradeMvc to
+            // fail with a connection error. Re-enable for real deployments,
+            // where both sides sit behind a properly trusted certificate.
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
 
             app.UseAuthentication();
             app.UseAuthorization();

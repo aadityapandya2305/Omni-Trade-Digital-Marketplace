@@ -21,6 +21,9 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    @{
+                        var currentRole = Context.Session.GetString("Role");
+                    }
                     <!-- Left Navigation Links -->
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
@@ -30,23 +33,35 @@
                             <a class="nav-link text-light" asp-area="" asp-controller="Products" asp-action="Index">Products</a>
                         </li>
 
-                        <!-- Customer Links -->
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Cart" asp-action="Index">Cart</a>
-                        </li>
-                        <li class="nav-item">
-							<a class="nav-link text-light" asp-area="" asp-controller="Orders" asp-action="Index">My Orders</a>
-                        </li>
+                        @if (currentRole == "Customer")
+                        {
+                            <!-- Customer Links -->
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-area="" asp-controller="Customers" asp-action="Dashboard">My Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-area="" asp-controller="Cart" asp-action="Index">Cart</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-area="" asp-controller="Orders" asp-action="Index">My Orders</a>
+                            </li>
+                        }
 
-                        <!-- Vendor Links -->
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Vendors" asp-action="Dashboard">Vendor Dashboard</a>
-                        </li>
+                        @if (currentRole == "Vendor")
+                        {
+                            <!-- Vendor Links -->
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-area="" asp-controller="Vendors" asp-action="Dashboard">Vendor Dashboard</a>
+                            </li>
+                        }
 
-                        <!-- Admin Links -->
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>
-                        </li>
+                        @if (currentRole == "Admin")
+                        {
+                            <!-- Admin Links -->
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-area="" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>
+                            </li>
+                        }
                     </ul>
 
                     <!-- Right Authentication Links -->
